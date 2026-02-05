@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - ThoughtStream</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8f9fa;
+            position: relative;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+        .bg-orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.4; z-index: 0; }
+        .bg-orb-1 { width: 500px; height: 500px; background: linear-gradient(135deg, #a855f7, #ec4899); top: -200px; left: -100px; }
+        .bg-orb-2 { width: 400px; height: 400px; background: linear-gradient(135deg, #3b82f6, #a855f7); bottom: -150px; right: -100px; }
+        .register-container {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 45px 40px;
+            border-radius: 32px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02), 0 12px 40px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            width: 100%;
+            max-width: 420px;
+            animation: fadeInUp 0.6s ease;
+            position: relative;
+            z-index: 10;
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 15px; }
+        .logo-icon {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.35);
+        }
+        .logo-icon i { font-size: 26px; color: white; }
+        .logo-text { font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .register-container h1 { text-align: center; color: #1a1a2e; margin-bottom: 8px; font-size: 28px; font-weight: 700; }
+        .register-subtitle { text-align: center; color: #6b7280; margin-bottom: 30px; font-size: 15px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: #374151; font-weight: 500; font-size: 14px; }
+        .form-group label i { font-size: 16px; color: #a855f7; }
+        .form-group input {
+            width: 100%; padding: 14px 18px;
+            border: 2px solid #e5e7eb; border-radius: 14px;
+            font-size: 15px; transition: all 0.3s ease;
+            background: #f9fafb; color: #1a1a2e; font-family: inherit;
+        }
+        .form-group input::placeholder { color: #9ca3af; }
+        .form-group input:focus {
+            outline: none; border-color: transparent; background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15), 0 0 20px rgba(168, 85, 247, 0.1);
+        }
+        .input-hint { font-size: 12px; color: #9ca3af; margin-top: 6px; }
+        .password-strength { margin-top: 10px; height: 4px; border-radius: 2px; background: #e5e7eb; overflow: hidden; }
+        .password-strength-bar { height: 100%; width: 0%; transition: all 0.3s ease; border-radius: 2px; }
+        .strength-weak { width: 33%; background: #ef4444; }
+        .strength-medium { width: 66%; background: #f59e0b; }
+        .strength-strong { width: 100%; background: #22c55e; }
+        .btn-register {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: #ffffff; border: none; border-radius: 16px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: all 0.4s ease; font-family: inherit;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.35); margin-top: 10px;
+        }
+        .btn-register:hover { transform: translateY(-3px); box-shadow: 0 12px 35px rgba(168, 85, 247, 0.45); }
+        .btn-register i { font-size: 20px; }
+        .divider { display: flex; align-items: center; margin: 24px 0; }
+        .divider-line { flex: 1; height: 1px; background: #e5e7eb; }
+        .divider-text { padding: 0 18px; color: #9ca3af; font-size: 13px; }
+        .btn-login {
+            width: 100%; padding: 16px;
+            background: #f3f4f6; color: #374151;
+            border: 2px solid #e5e7eb; border-radius: 16px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; text-decoration: none;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-login:hover { background: #ffffff; border-color: #a855f7; color: #a855f7; transform: translateY(-2px); }
+        .btn-login i { font-size: 20px; }
+        .error-message {
+            background: #fef2f2; color: #dc2626;
+            padding: 14px 18px; border-radius: 14px;
+            margin-bottom: 20px; text-align: center;
+            font-weight: 500; font-size: 14px; border: 1px solid #fecaca;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        @media (max-width: 480px) { .register-container { padding: 35px 25px; } .logo-text { font-size: 24px; } }
+    </style>
+</head>
+<body>
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+
+    <div class="register-container">
+        <div class="logo">
+            <div class="logo-icon"><i class="ri-bubble-chart-fill"></i></div>
+            <span class="logo-text">ThoughtStream</span>
+        </div>
+
+        <h1>Create Account</h1>
+        <p class="register-subtitle">Join our amazing community</p>
+
+        <% if (error) { %>
+            <div class="error-message"><i class="ri-error-warning-line"></i><%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/register" id="registerForm">
+            <div class="form-group">
+                <label for="name"><i class="ri-user-line"></i> Full Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter your full name" required minlength="2">
+            </div>
+
+            <div class="form-group">
+                <label for="email"><i class="ri-mail-line"></i> Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                <p class="input-hint">We'll never share your email</p>
+            </div>
+
+            <div class="form-group">
+                <label for="password"><i class="ri-lock-line"></i> Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a password" required minlength="6">
+                <div class="password-strength"><div class="password-strength-bar" id="strengthBar"></div></div>
+                <p class="input-hint">At least 6 characters</p>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword"><i class="ri-lock-password-line"></i> Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+            </div>
+
+            <button type="submit" class="btn-register"><i class="ri-rocket-line"></i> Create Account</button>
+        </form>
+
+        <div class="divider">
+            <div class="divider-line"></div>
+            <span class="divider-text">Already have an account?</span>
+            <div class="divider-line"></div>
+        </div>
+
+        <a href="/login" class="btn-login"><i class="ri-login-box-line"></i> Sign In</a>
+    </div>
+
+    <script>
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.getElementById('strengthBar');
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            if (password.match(/[^a-zA-Z0-9]/)) strength++;
+            strengthBar.className = 'password-strength-bar';
+            if (password.length === 0) { strengthBar.style.width = '0%'; }
+            else if (strength <= 1) { strengthBar.classList.add('strength-weak'); }
+            else if (strength <= 2) { strengthBar.classList.add('strength-medium'); }
+            else { strengthBar.classList.add('strength-strong'); }
+        });
+        const form = document.getElementById('registerForm');
+        const confirmPassword = document.getElementById('confirmPassword');
+        form.addEventListener('submit', function(e) {
+            if (passwordInput.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                confirmPassword.focus();
+            }
+        });
+    </script>
+</body>
+</html>
