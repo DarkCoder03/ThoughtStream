@@ -1,15 +1,13 @@
 const { Pool } = require('pg');
 
-// Create connection pool to PostgreSQL database
 const pool = new Pool({
     host: 'localhost',
     port: 5432,
     user: 'postgres',
-    password: 'starlink',  // ← Change this to your PostgreSQL password
+    password: 'starlink',  // ← Change this!
     database: 'login_system'
 });
 
-// Test connection
 pool.connect((err, client, release) => {
     if (err) {
         console.error('Database connection failed:', err.message);
