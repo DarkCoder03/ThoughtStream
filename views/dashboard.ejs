@@ -4,685 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ThoughtStream</title>
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.svg">
-    <link rel="apple-touch-icon" href="/favicon.svg">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💭</text></svg>">
+    <link rel="icon" type="image/png" href="/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            min-height: 100vh;
-            background: #ffffff;
-            color: #1a1a2e;
-        }
-
-        /* Subtle Background Gradient Wash */
-        .bg-gradient {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(168, 85, 247, 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.02) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 25px 0;
-            animation: fadeInDown 0.6s ease;
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 
-                0 8px 20px rgba(168, 85, 247, 0.25),
-                0 4px 8px rgba(236, 72, 153, 0.15);
-        }
-
-        .logo-icon i {
-            font-size: 26px;
-            color: white;
-        }
-
-        .logo-text {
-            font-size: 24px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-avatar {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 18px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25);
-        }
-
-        .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .user-name {
-            font-weight: 600;
-            color: #374151;
-            font-size: 15px;
-        }
-
-        .btn-settings {
-            width: 48px;
-            height: 48px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(168, 85, 247, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6b7280;
-            font-size: 22px;
-            text-decoration: none;
-            transition: all 0.4s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .btn-settings:hover {
-            color: #a855f7;
-            transform: rotate(90deg);
-            box-shadow: 
-                0 8px 25px rgba(168, 85, 247, 0.15),
-                0 0 20px rgba(168, 85, 247, 0.1);
-        }
-
-        /* Welcome Section */
-        .welcome-section {
-            text-align: center;
-            padding: 50px 0 45px;
-            animation: fadeInUp 0.6s ease 0.1s both;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .welcome-text {
-            font-size: 40px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
-        }
-
-        .welcome-text span {
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .welcome-subtext {
-            font-size: 16px;
-            color: #9ca3af;
-            font-weight: 400;
-        }
-
-        /* ============================================
-           HERO INPUT BOX - Holographic Ethereal Tech
-           ============================================ */
-        .thought-input-container {
-            animation: fadeInUp 0.6s ease 0.2s both;
-            position: relative;
-        }
-
-        .thought-input-box {
-            /* Glass Effect */
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            
-            /* Pill Shape */
-            border-radius: 50px;
-            padding: 8px 10px 8px 28px;
-            
-            /* Crisp Glass Edge - Ultra subtle */
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            
-            /* Holographic Soft Glow - THE KEY EFFECT */
-            box-shadow: 
-                0 8px 32px rgba(168, 85, 247, 0.12),
-                0 4px 16px rgba(236, 72, 153, 0.08),
-                0 2px 8px rgba(59, 130, 246, 0.06),
-                inset 0 1px 1px rgba(255, 255, 255, 0.8);
-            
-            /* Smooth Transition */
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Focus State - Expanded Ethereal Glow */
-        .thought-input-box:focus-within {
-            background: rgba(255, 255, 255, 0.75);
-            
-            /* Enhanced Holographic Glow */
-            box-shadow: 
-                0 12px 40px rgba(168, 85, 247, 0.18),
-                0 8px 24px rgba(236, 72, 153, 0.12),
-                0 4px 12px rgba(59, 130, 246, 0.08),
-                0 0 60px rgba(168, 85, 247, 0.08),
-                inset 0 1px 2px rgba(255, 255, 255, 0.9);
-            
-            /* Slight lift */
-            transform: translateY(-2px);
-        }
-
-        .thought-form {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .thought-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 18px 0;
-            font-size: 16px;
-            color: #1a1a2e;
-            outline: none;
-            font-family: inherit;
-            font-weight: 400;
-        }
-
-        .thought-input::placeholder {
-            color: #b4b4b4;
-            font-weight: 400;
-        }
-
-        .btn-post {
-            width: 52px;
-            height: 52px;
-            background: rgba(248, 250, 252, 0.9);
-            color: #9ca3af;
-            border: none;
-            border-radius: 50%;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        .btn-post:hover {
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            color: white;
-            transform: scale(1.08);
-            box-shadow: 
-                0 8px 25px rgba(168, 85, 247, 0.35),
-                0 4px 12px rgba(236, 72, 153, 0.25);
-        }
-
-        /* Feed Section */
-        .feed-section {
-            margin-top: 55px;
-        }
-
-        .feed-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 25px;
-            animation: fadeInUp 0.6s ease 0.3s both;
-        }
-
-        .feed-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #374151;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .feed-title i {
-            color: #a855f7;
-            font-size: 20px;
-        }
-
-        .feed-count {
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            color: white;
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
-        }
-
-        .thoughts-feed {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        /* Thought Card - Clean Glass */
-        .thought-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px;
-            padding: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 
-                0 4px 20px rgba(0, 0, 0, 0.04),
-                0 1px 4px rgba(0, 0, 0, 0.02);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: slideInUp 0.5s ease both;
-        }
-
-        .thought-card:nth-child(1) { animation-delay: 0.05s; }
-        .thought-card:nth-child(2) { animation-delay: 0.1s; }
-        .thought-card:nth-child(3) { animation-delay: 0.15s; }
-        .thought-card:nth-child(4) { animation-delay: 0.2s; }
-        .thought-card:nth-child(5) { animation-delay: 0.25s; }
-
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .thought-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 
-                0 12px 40px rgba(168, 85, 247, 0.08),
-                0 4px 16px rgba(0, 0, 0, 0.04);
-        }
-
-        .own-thought {
-            border-left: 3px solid transparent;
-            border-image: linear-gradient(180deg, #a855f7, #ec4899) 1;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 16px;
-        }
-
-        .card-avatar {
-            width: 46px;
-            height: 46px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 17px;
-            flex-shrink: 0;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
-        }
-
-        .card-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .card-user-info {
-            flex: 1;
-        }
-
-        .card-user-name {
-            font-weight: 600;
-            color: #1a1a2e;
-            font-size: 15px;
-        }
-
-        .you-badge {
-            color: #a855f7;
-            font-size: 12px;
-            font-weight: 500;
-            margin-left: 4px;
-        }
-
-        .card-timestamp {
-            font-size: 13px;
-            color: #b4b4b4;
-            margin-top: 2px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .card-timestamp i {
-            font-size: 13px;
-        }
-
-        .card-message {
-            font-size: 15px;
-            line-height: 1.7;
-            color: #4b5563;
-            margin-bottom: 18px;
-            word-wrap: break-word;
-        }
-
-        /* Card Actions */
-        .card-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(248, 250, 252, 0.8);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            color: #9ca3af;
-            font-size: 13px;
-            cursor: pointer;
-            padding: 9px 14px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            font-family: inherit;
-            font-weight: 500;
-        }
-
-        .action-btn:hover {
-            background: rgba(168, 85, 247, 0.08);
-            color: #a855f7;
-            border-color: rgba(168, 85, 247, 0.15);
-        }
-
-        .action-btn i {
-            font-size: 17px;
-        }
-
-        .action-btn.liked {
-            background: rgba(239, 68, 68, 0.08);
-            border-color: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-        }
-
-        .action-btn.liked i {
-            animation: heartPop 0.4s ease;
-        }
-
-        @keyframes heartPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.25); }
-            100% { transform: scale(1); }
-        }
-
-        .action-btn.liked:hover {
-            background: rgba(239, 68, 68, 0.12);
-        }
-
-        .action-btn.delete-btn {
-            margin-left: auto;
-        }
-
-        .action-btn.delete-btn:hover {
-            background: rgba(239, 68, 68, 0.08);
-            border-color: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-        }
-
-        /* Reply Section */
-        .reply-section {
-            margin-top: 18px;
-            padding-top: 18px;
-            border-top: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        .replies-container {
-            display: none;
-        }
-
-        .replies-container.show {
-            display: block;
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .reply-item {
-            display: flex;
-            gap: 12px;
-            padding: 14px;
-            background: rgba(248, 250, 252, 0.6);
-            border-radius: 16px;
-            margin-bottom: 10px;
-        }
-
-        .reply-avatar {
-            width: 34px;
-            height: 34px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 12px;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-
-        .reply-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .reply-content {
-            flex: 1;
-        }
-
-        .reply-user-name {
-            font-weight: 600;
-            font-size: 13px;
-            color: #1a1a2e;
-        }
-
-        .reply-text {
-            font-size: 14px;
-            color: #6b7280;
-            margin-top: 3px;
-            line-height: 1.5;
-        }
-
-        .reply-time {
-            font-size: 11px;
-            color: #b4b4b4;
-            margin-top: 5px;
-        }
-
-        .reply-form {
-            display: flex;
-            gap: 10px;
-            margin-top: 14px;
-        }
-
-        .reply-input {
-            flex: 1;
-            padding: 12px 18px;
-            border: 1px solid rgba(0, 0, 0, 0.06);
-            border-radius: 25px;
-            font-size: 14px;
-            outline: none;
-            font-family: inherit;
-            background: rgba(255, 255, 255, 0.8);
-            color: #1a1a2e;
-            transition: all 0.3s ease;
-        }
-
-        .reply-input::placeholder {
-            color: #b4b4b4;
-        }
-
-        .reply-input:focus {
-            border-color: rgba(168, 85, 247, 0.3);
-            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.08);
-        }
-
-        .btn-reply-submit {
-            padding: 12px 20px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);
-        }
-
-        .btn-reply-submit:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            animation: fadeInUp 0.6s ease 0.3s both;
-        }
-
-        .empty-icon {
-            width: 90px;
-            height: 90px;
-            background: rgba(168, 85, 247, 0.06);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 25px;
-        }
-
-        .empty-icon i {
-            font-size: 40px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .empty-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #1a1a2e;
-            margin-bottom: 8px;
-        }
-
-        .empty-text {
-            font-size: 15px;
-            color: #9ca3af;
-        }
-
-        /* Responsive */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #ffffff; color: #1a1a2e; }
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 25px 0; }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon i { font-size: 26px; color: white; }
+        .logo-text { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 18px; overflow: hidden; }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-name { font-weight: 600; color: #374151; }
+        .btn-settings { width: 48px; height: 48px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 22px; text-decoration: none; transition: all 0.3s; }
+        .btn-settings:hover { color: #a855f7; transform: rotate(90deg); }
+        .welcome-section { text-align: center; padding: 50px 0 45px; }
+        .welcome-text { font-size: 36px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; }
+        .welcome-text span { background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .welcome-subtext { color: #9ca3af; }
+        .thought-input-box { background: rgba(255,255,255,0.8); border-radius: 50px; padding: 8px 10px 8px 28px; box-shadow: 0 8px 32px rgba(168,85,247,0.12), 0 4px 16px rgba(236,72,153,0.08); border: 1px solid rgba(168,85,247,0.1); }
+        .thought-form { display: flex; align-items: center; gap: 12px; }
+        .thought-input { flex: 1; border: none; background: transparent; padding: 18px 0; font-size: 16px; color: #1a1a2e; outline: none; font-family: inherit; }
+        .thought-input::placeholder { color: #b4b4b4; }
+        .btn-post { width: 52px; height: 52px; background: #f3f4f6; color: #9ca3af; border: none; border-radius: 50%; font-size: 20px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+        .btn-post:hover { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; }
+        .feed-section { margin-top: 50px; }
+        .feed-header { display: flex; align-items: center; gap: 12px; margin-bottom: 25px; }
+        .feed-title { font-size: 18px; font-weight: 600; color: #374151; }
+        .feed-count { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .thoughts-feed { display: flex; flex-direction: column; gap: 18px; }
+        .thought-card { background: #fff; border-radius: 20px; padding: 24px; border: 1px solid #f3f4f6; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .thought-card:hover { box-shadow: 0 8px 30px rgba(168,85,247,0.1); }
+        .own-thought { border-left: 3px solid #a855f7; }
+        .card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+        .card-avatar { width: 46px; height: 46px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; overflow: hidden; }
+        .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .card-user-name { font-weight: 600; color: #1a1a2e; }
+        .you-badge { color: #a855f7; font-size: 12px; margin-left: 5px; }
+        .card-timestamp { font-size: 13px; color: #b4b4b4; margin-top: 2px; }
+        .card-message { font-size: 15px; line-height: 1.7; color: #4b5563; margin-bottom: 18px; }
+        .card-actions { display: flex; align-items: center; gap: 8px; padding-top: 16px; border-top: 1px solid #f3f4f6; }
+        .action-btn { display: flex; align-items: center; gap: 6px; background: #f9fafb; border: 1px solid #f3f4f6; color: #9ca3af; font-size: 13px; cursor: pointer; padding: 9px 14px; border-radius: 12px; transition: all 0.3s; font-family: inherit; }
+        .action-btn:hover { background: rgba(168,85,247,0.08); color: #a855f7; }
+        .action-btn i { font-size: 17px; }
+        .action-btn.liked { background: rgba(239,68,68,0.08); color: #ef4444; }
+        .action-btn.delete-btn { margin-left: auto; }
+        .action-btn.delete-btn:hover { background: rgba(239,68,68,0.08); color: #ef4444; }
+        .replies-container { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #f3f4f6; }
+        .replies-container.show { display: block; }
+        .reply-item { display: flex; gap: 12px; padding: 12px; background: #f9fafb; border-radius: 12px; margin-bottom: 10px; }
+        .reply-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; overflow: hidden; }
+        .reply-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .reply-user-name { font-weight: 600; font-size: 13px; color: #1a1a2e; }
+        .reply-text { font-size: 14px; color: #6b7280; margin-top: 3px; }
+        .reply-time { font-size: 11px; color: #b4b4b4; margin-top: 5px; }
+        .reply-form { display: flex; gap: 10px; margin-top: 12px; }
+        .reply-input { flex: 1; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 25px; font-size: 14px; outline: none; }
+        .reply-input:focus { border-color: #a855f7; }
+        .btn-reply-submit { padding: 12px 20px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border: none; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .empty-state { text-align: center; padding: 80px 20px; }
+        .empty-icon { width: 80px; height: 80px; background: rgba(168,85,247,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        .empty-icon i { font-size: 36px; color: #a855f7; }
+        .empty-title { font-size: 20px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; }
+        .empty-text { color: #9ca3af; }
         @media (max-width: 600px) {
-            .container { padding: 15px; }
             .header { flex-wrap: wrap; gap: 15px; }
-            .user-info { order: 3; width: 100%; justify-content: space-between; }
-            .welcome-text { font-size: 30px; }
-            .thought-input-box { 
-                border-radius: 28px; 
-                padding: 6px 8px 6px 20px; 
-            }
-            .thought-input { padding: 14px 0; font-size: 15px; }
-            .btn-post { width: 46px; height: 46px; font-size: 18px; }
-            .thought-card { padding: 20px; border-radius: 20px; }
-            .card-actions { flex-wrap: wrap; gap: 8px; }
+            .user-info { width: 100%; justify-content: space-between; }
+            .welcome-text { font-size: 28px; }
+            .thought-input-box { border-radius: 25px; padding: 6px 8px 6px 18px; }
+            .card-actions { flex-wrap: wrap; }
             .action-btn.delete-btn { margin-left: 0; }
             .reply-form { flex-direction: column; }
-            .btn-reply-submit { width: 100%; justify-content: center; }
+            .btn-reply-submit { width: 100%; }
         }
     </style>
 </head>
 <body>
-    <!-- Subtle Background Gradient -->
-    <div class="bg-gradient"></div>
-
     <div class="container">
         <!-- Header -->
         <header class="header">
@@ -690,89 +92,89 @@
                 <div class="logo-icon"><i class="ri-bubble-chart-fill"></i></div>
                 <span class="logo-text">ThoughtStream</span>
             </div>
-
             <div class="user-info">
                 <div class="user-avatar">
-                    <% if (profilePic) { %><img src="/uploads/<%= profilePic %>" alt="Profile"><% } else { %><%= name.charAt(0).toUpperCase() %><% } %>
+                    <% if (profilePic) { %>
+                        <img src="/uploads/<%= profilePic %>" alt="Profile">
+                    <% } else { %>
+                        <%= name.charAt(0).toUpperCase() %>
+                    <% } %>
                 </div>
                 <span class="user-name"><%= name %></span>
-                <a href="/settings?id=<%= userId %>&name=<%= encodeURIComponent(name) %>&email=<%= encodeURIComponent(email) %>" class="btn-settings" title="Settings">
-                    <i class="ri-settings-3-line"></i>
-                </a>
+                <a href="/settings" class="btn-settings"><i class="ri-settings-3-line"></i></a>
             </div>
         </header>
 
-        <!-- Welcome Section -->
+        <!-- Welcome -->
         <section class="welcome-section">
             <h1 class="welcome-text">Welcome back, <span><%= name.split(' ')[0] %></span> ✨</h1>
             <p class="welcome-subtext">Share your thoughts with the world</p>
         </section>
 
-        <!-- Hero Input Box - Holographic Ethereal -->
-        <section class="thought-input-container">
+        <!-- Input Box -->
+        <section>
             <div class="thought-input-box">
                 <form class="thought-form" method="POST" action="/add-thought">
-                    <input type="hidden" name="userId" value="<%= userId %>">
-                    <input type="hidden" name="userName" value="<%= name %>">
-                    <input type="hidden" name="userEmail" value="<%= email %>">
                     <input type="text" name="thought" class="thought-input" placeholder="What's on your mind?" autocomplete="off" maxlength="280" required>
                     <button type="submit" class="btn-post"><i class="ri-send-plane-fill"></i></button>
                 </form>
             </div>
         </section>
 
-        <!-- Feed Section -->
+        <!-- Feed -->
         <section class="feed-section">
             <div class="feed-header">
-                <h2 class="feed-title"><i class="ri-global-line"></i> Global Feed</h2>
+                <h2 class="feed-title"><i class="ri-global-line" style="color:#a855f7;margin-right:8px;"></i>Global Feed</h2>
                 <span class="feed-count"><%= thoughts.length %> thoughts</span>
             </div>
 
             <% if (thoughts.length > 0) { %>
                 <div class="thoughts-feed">
-                    <% thoughts.forEach(function(thought) { %>
-                        <article class="thought-card <%= thought.userEmail === email ? 'own-thought' : '' %>">
+                    <% for (var i = 0; i < thoughts.length; i++) { %>
+                        <% var thought = thoughts[i]; %>
+                        <article class="thought-card <% if (thought.userEmail === email) { %>own-thought<% } %>">
                             <div class="card-header">
                                 <div class="card-avatar">
-                                    <% if (thought.profilePic) { %><img src="/uploads/<%= thought.profilePic %>" alt="Profile"><% } else { %><%= thought.userName.charAt(0).toUpperCase() %><% } %>
+                                    <% if (thought.profilePic) { %>
+                                        <img src="/uploads/<%= thought.profilePic %>" alt="">
+                                    <% } else { %>
+                                        <%= thought.userName.charAt(0).toUpperCase() %>
+                                    <% } %>
                                 </div>
-                                <div class="card-user-info">
+                                <div>
                                     <div class="card-user-name">
                                         <%= thought.userName %>
-                                        <% if (thought.userEmail === email) { %><span class="you-badge">(You)</span><% } %>
+                                        <% if (thought.userEmail === email) { %>
+                                            <span class="you-badge">(You)</span>
+                                        <% } %>
                                     </div>
-                                    <div class="card-timestamp">
-                                        <i class="ri-time-line"></i>
-                                        <%= new Date(thought.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
-                                    </div>
+                                    <div class="card-timestamp"><%= new Date(thought.timestamp).toLocaleString() %></div>
                                 </div>
                             </div>
+
                             <p class="card-message"><%= thought.message %></p>
-                            
+
                             <div class="card-actions">
-                                <form method="POST" action="/like-thought" style="margin: 0;">
+                                <!-- Like -->
+                                <form method="POST" action="/like-thought" style="margin:0;">
                                     <input type="hidden" name="thoughtId" value="<%= thought.id %>">
-                                    <input type="hidden" name="userId" value="<%= userId %>">
-                                    <input type="hidden" name="userName" value="<%= name %>">
-                                    <input type="hidden" name="userEmail" value="<%= email %>">
-                                    <button type="submit" class="action-btn <%= thought.likedBy && thought.likedBy.includes(email) ? 'liked' : '' %>">
-                                        <i class="<%= thought.likedBy && thought.likedBy.includes(email) ? 'ri-heart-fill' : 'ri-heart-line' %>"></i>
+                                    <button type="submit" class="action-btn <% if (thought.likedBy && thought.likedBy.includes(email)) { %>liked<% } %>">
+                                        <i class="<% if (thought.likedBy && thought.likedBy.includes(email)) { %>ri-heart-fill<% } else { %>ri-heart-line<% } %>"></i>
                                         <%= thought.likedBy ? thought.likedBy.length : 0 %>
                                     </button>
                                 </form>
 
+                                <!-- Comment Toggle -->
                                 <button type="button" class="action-btn" onclick="toggleReplies('<%= thought.id %>')">
                                     <i class="ri-chat-3-line"></i>
                                     <%= thought.replies ? thought.replies.length : 0 %>
                                 </button>
 
+                                <!-- Delete -->
                                 <% if (thought.userEmail === email) { %>
-                                    <form method="POST" action="/delete-thought" style="margin: 0;">
+                                    <form method="POST" action="/delete-thought" style="margin:0;">
                                         <input type="hidden" name="thoughtId" value="<%= thought.id %>">
                                         <input type="hidden" name="thoughtUserEmail" value="<%= thought.userEmail %>">
-                                        <input type="hidden" name="userId" value="<%= userId %>">
-                                        <input type="hidden" name="userName" value="<%= name %>">
-                                        <input type="hidden" name="userEmail" value="<%= email %>">
                                         <button type="submit" class="action-btn delete-btn" onclick="return confirm('Delete this thought?')">
                                             <i class="ri-delete-bin-line"></i>
                                         </button>
@@ -780,51 +182,64 @@
                                 <% } %>
                             </div>
 
-                            <div class="reply-section">
-                                <div id="replies-<%= thought.id %>" class="replies-container">
-                                    <% if (thought.replies && thought.replies.length > 0) { %>
-                                        <% thought.replies.forEach(function(reply) { %>
-                                            <div class="reply-item">
-                                                <div class="reply-avatar">
-                                                    <% if (reply.profilePic) { %><img src="/uploads/<%= reply.profilePic %>" alt="Profile"><% } else { %><%= reply.userName.charAt(0).toUpperCase() %><% } %>
-                                                </div>
-                                                <div class="reply-content">
-                                                    <div class="reply-user-name"><%= reply.userName %></div>
-                                                    <div class="reply-text"><%= reply.text %></div>
-                                                    <div class="reply-time"><%= new Date(reply.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></div>
-                                                </div>
+                            <!-- Replies -->
+                            <div id="replies-<%= thought.id %>" class="replies-container">
+                                <% if (thought.replies && thought.replies.length > 0) { %>
+                                    <% for (var j = 0; j < thought.replies.length; j++) { %>
+                                        <% var reply = thought.replies[j]; %>
+                                        <div class="reply-item">
+                                            <div class="reply-avatar">
+                                                <% if (reply.profilePic) { %>
+                                                    <img src="/uploads/<%= reply.profilePic %>" alt="">
+                                                <% } else { %>
+                                                    <%= reply.userName.charAt(0).toUpperCase() %>
+                                                <% } %>
                                             </div>
-                                        <% }); %>
+                                            <div>
+                                                <div class="reply-user-name"><%= reply.userName %></div>
+                                                <div class="reply-text"><%= reply.text %></div>
+                                                <div class="reply-time"><%= new Date(reply.timestamp).toLocaleString() %></div>
+                                            </div>
+                                        </div>
                                     <% } %>
+                                <% } %>
 
-                                    <form class="reply-form" method="POST" action="/reply/<%= thought.id %>">
-                                        <input type="hidden" name="userId" value="<%= userId %>">
-                                        <input type="hidden" name="userName" value="<%= name %>">
-                                        <input type="hidden" name="userEmail" value="<%= email %>">
-                                        <input type="text" name="replyText" class="reply-input" placeholder="Write a reply..." required maxlength="200">
-                                        <button type="submit" class="btn-reply-submit"><i class="ri-reply-line"></i> Reply</button>
-                                    </form>
-                                </div>
+                                <!-- Reply Form -->
+                                <form class="reply-form" method="POST" action="/reply/<%= thought.id %>">
+                                    <input type="text" name="replyText" class="reply-input" placeholder="Write a reply..." required maxlength="200">
+                                    <button type="submit" class="btn-reply-submit"><i class="ri-reply-line"></i> Reply</button>
+                                </form>
                             </div>
                         </article>
-                    <% }); %>
+                    <% } %>
                 </div>
             <% } else { %>
                 <div class="empty-state">
                     <div class="empty-icon"><i class="ri-chat-smile-3-line"></i></div>
                     <h3 class="empty-title">No thoughts yet</h3>
-                    <p class="empty-text">Be the first to share something amazing!</p>
+                    <p class="empty-text">Be the first to share something!</p>
                 </div>
             <% } %>
         </section>
     </div>
 
     <script>
-        function toggleReplies(thoughtId) {
-            const repliesContainer = document.getElementById('replies-' + thoughtId);
-            repliesContainer.classList.toggle('show');
+        function toggleReplies(id) {
+            var el = document.getElementById('replies-' + id);
+            el.classList.toggle('show');
         }
-        document.querySelector('.thought-input').focus();
+
+        // Check auth status every 2 seconds
+        setInterval(function() {
+            fetch('/api/auth-status')
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (!data.isLoggedIn) {
+                        window.location.href = '/login';
+                    }
+                })
+                .catch(function() {});
+        }, 2000);
     </script>
 </body>
 </html>

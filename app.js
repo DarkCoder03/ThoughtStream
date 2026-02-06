@@ -1,10 +1,24 @@
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
+const session = require('express-session');
 const db = require('./db');
 
 const app = express();
 const PORT = 3000;
+
+// ==========================================
+// SESSION SETUP
+// ==========================================
+app.use(session({
+    secret: 'thoughtstream-secret-key-2024',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: false, // Set to true if using HTTPS
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
 
 // ==========================================
 // MULTER SETUP FOR FILE UPLOADS
@@ -42,12 +56,26 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ==========================================
+// AUTH MIDDLEWARE - Check if user is logged in
+// ==========================================
+function isAuthenticated(req, res, next) {
+    if (req.session && req.session.userId) {
+        return next();
+    }
+    return res.redirect('/login');
+}
 
 // ==========================================
 // ROUTES
 // ==========================================
 
 app.get('/', (req, res) => {
+    if (req.session && req.session.userId) {
+        return res.redirect('/dashboard');
+    }
     res.redirect('/login');
 });
 
@@ -55,6 +83,10 @@ app.get('/', (req, res) => {
 // LOGIN
 // ==========================================
 app.get('/login', (req, res) => {
+    // If already logged in, redirect to dashboard
+    if (req.session && req.session.userId) {
+        return res.redirect('/dashboard');
+    }
     res.render('login', { error: null, success: null });
 });
 
@@ -68,7 +100,14 @@ app.post('/login', async (req, res) => {
 
         if (result.rows.length > 0) {
             const user = result.rows[0];
-            return res.redirect(`/dashboard?id=${user.id}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}`);
+            
+            // Store user data in session
+            req.session.userId = user.id;
+            req.session.userName = user.name;
+            req.session.userEmail = user.email;
+            req.session.profilePic = user.profile_pic;
+            
+            return res.redirect('/dashboard');
         } else {
             return res.render('login', { error: 'Invalid email or password.', success: null });
         }
@@ -82,6 +121,10 @@ app.post('/login', async (req, res) => {
 // REGISTER
 // ==========================================
 app.get('/register', (req, res) => {
+    // If already logged in, redirect to dashboard
+    if (req.session && req.session.userId) {
+        return res.redirect('/dashboard');
+    }
     res.render('register', { error: null });
 });
 
@@ -123,23 +166,43 @@ app.post('/register', async (req, res) => {
 });
 
 // ==========================================
-// DASHBOARD
+// LOGOUT
 // ==========================================
-app.get('/dashboard', async (req, res) => {
-    const userId = req.query.id || '';
-    const userName = req.query.name || 'User';
-    const userEmail = req.query.email || '';
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Logout error:', err);
+        }
+        res.redirect('/login');
+    });
+});
+
+// ==========================================
+// DASHBOARD (Protected Route)
+// ==========================================
+app.get('/dashboard', isAuthenticated, async (req, res) => {
+    const userId = req.session.userId;
+    const userName = req.session.userName;
+    const userEmail = req.session.userEmail;
 
     try {
-        // Get user's profile pic from database
-        let profilePic = null;
-        if (userId) {
-            const userQuery = 'SELECT profile_pic FROM users WHERE id = $1';
-            const userResult = await db.query(userQuery, [userId]);
-            profilePic = userResult.rows[0]?.profile_pic || null;
+        // Get latest user data from database
+        const userQuery = 'SELECT * FROM users WHERE id = $1';
+        const userResult = await db.query(userQuery, [userId]);
+        
+        if (userResult.rows.length === 0) {
+            // User not found, destroy session
+            req.session.destroy();
+            return res.redirect('/login');
         }
+        
+        const user = userResult.rows[0];
+        const profilePic = user.profile_pic || null;
+        
+        // Update session with latest data
+        req.session.userName = user.name;
+        req.session.profilePic = user.profile_pic;
 
-        // Get all thoughts with user profile pics (newest first)
         const thoughtsQuery = `
             SELECT t.*, u.profile_pic 
             FROM thoughts t 
@@ -148,11 +211,9 @@ app.get('/dashboard', async (req, res) => {
         `;
         const thoughtsResult = await db.query(thoughtsQuery);
 
-        // Get replies for each thought and format data
         const thoughts = [];
         
         for (const thought of thoughtsResult.rows) {
-            // Get replies for this thought
             const repliesQuery = `
                 SELECT r.*, u.profile_pic 
                 FROM replies r 
@@ -162,7 +223,6 @@ app.get('/dashboard', async (req, res) => {
             `;
             const repliesResult = await db.query(repliesQuery, [thought.id]);
             
-            // Format replies
             const formattedReplies = repliesResult.rows.map(reply => ({
                 id: reply.id,
                 userName: reply.user_name || 'Unknown',
@@ -172,7 +232,6 @@ app.get('/dashboard', async (req, res) => {
                 profilePic: reply.profile_pic || null
             }));
 
-            // Format thought with proper field names
             thoughts.push({
                 id: thought.id,
                 userName: thought.user_name || 'Unknown',
@@ -187,7 +246,7 @@ app.get('/dashboard', async (req, res) => {
 
         res.render('dashboard', {
             userId: userId,
-            name: userName,
+            name: user.name,
             email: userEmail,
             profilePic: profilePic,
             thoughts: thoughts
@@ -205,26 +264,29 @@ app.get('/dashboard', async (req, res) => {
 });
 
 // ==========================================
-// SETTINGS PAGE
+// SETTINGS PAGE (Protected Route)
 // ==========================================
-app.get('/settings', async (req, res) => {
-    const userId = req.query.id || '';
-    const userName = req.query.name || 'User';
-    const userEmail = req.query.email || '';
+app.get('/settings', isAuthenticated, async (req, res) => {
+    const userId = req.session.userId;
+    const userName = req.session.userName;
+    const userEmail = req.session.userEmail;
 
     try {
-        let profilePic = null;
-        if (userId) {
-            const userQuery = 'SELECT profile_pic FROM users WHERE id = $1';
-            const userResult = await db.query(userQuery, [userId]);
-            profilePic = userResult.rows[0]?.profile_pic || null;
+        const userQuery = 'SELECT * FROM users WHERE id = $1';
+        const userResult = await db.query(userQuery, [userId]);
+        
+        if (userResult.rows.length === 0) {
+            req.session.destroy();
+            return res.redirect('/login');
         }
+        
+        const user = userResult.rows[0];
 
         res.render('settings', {
             userId: userId,
-            name: userName,
+            name: user.name,
             email: userEmail,
-            profilePic: profilePic,
+            profilePic: user.profile_pic || null,
             success: null,
             error: null
         });
@@ -241,25 +303,29 @@ app.get('/settings', async (req, res) => {
     }
 });
 
-app.post('/settings/update', upload.single('profilePic'), async (req, res) => {
-    const userId = req.body.userId || '';
+app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async (req, res) => {
+    const userId = req.session.userId;
+    const userEmail = req.session.userEmail;
     const currentName = req.body.currentName || '';
-    const userEmail = req.body.userEmail || '';
     const newName = req.body.newName ? req.body.newName.trim() : currentName;
 
     try {
-        // Update name in database
         if (newName !== currentName) {
             await db.query('UPDATE users SET name = $1 WHERE id = $2', [newName, userId]);
             await db.query('UPDATE thoughts SET user_name = $1 WHERE user_email = $2', [newName, userEmail]);
             await db.query('UPDATE replies SET user_name = $1 WHERE user_email = $2', [newName, userEmail]);
+            
+            // Update session
+            req.session.userName = newName;
         }
 
-        // Update profile picture in database
         let profilePic = null;
         if (req.file) {
             profilePic = req.file.filename;
             await db.query('UPDATE users SET profile_pic = $1 WHERE id = $2', [profilePic, userId]);
+            
+            // Update session
+            req.session.profilePic = profilePic;
         } else {
             const result = await db.query('SELECT profile_pic FROM users WHERE id = $1', [userId]);
             profilePic = result.rows[0]?.profile_pic || null;
@@ -288,13 +354,13 @@ app.post('/settings/update', upload.single('profilePic'), async (req, res) => {
 });
 
 // ==========================================
-// ADD THOUGHT
+// ADD THOUGHT (Protected Route)
 // ==========================================
-app.post('/add-thought', async (req, res) => {
+app.post('/add-thought', isAuthenticated, async (req, res) => {
     const thought = req.body.thought ? req.body.thought.trim() : '';
-    const userId = req.body.userId || null;
-    const userName = req.body.userName || 'Anonymous';
-    const userEmail = req.body.userEmail || '';
+    const userId = req.session.userId;
+    const userName = req.session.userName;
+    const userEmail = req.session.userEmail;
 
     if (thought !== '') {
         try {
@@ -308,17 +374,15 @@ app.post('/add-thought', async (req, res) => {
         }
     }
 
-    res.redirect(`/dashboard?id=${userId}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`);
+    res.redirect('/dashboard');
 });
 
 // ==========================================
-// LIKE THOUGHT (TOGGLE)
+// LIKE THOUGHT (Protected Route)
 // ==========================================
-app.post('/like-thought', async (req, res) => {
+app.post('/like-thought', isAuthenticated, async (req, res) => {
     const thoughtId = parseInt(req.body.thoughtId);
-    const userId = req.body.userId || '';
-    const userName = req.body.userName || 'User';
-    const userEmail = req.body.userEmail || '';
+    const userEmail = req.session.userEmail;
 
     try {
         const result = await db.query('SELECT liked_by FROM thoughts WHERE id = $1', [thoughtId]);
@@ -340,18 +404,17 @@ app.post('/like-thought', async (req, res) => {
         console.error('Like error:', err);
     }
 
-    res.redirect(`/dashboard?id=${userId}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`);
+    res.redirect('/dashboard');
 });
 
 // ==========================================
-// REPLY TO THOUGHT
+// REPLY TO THOUGHT (Protected Route)
 // ==========================================
-app.post('/reply/:thoughtId', async (req, res) => {
+app.post('/reply/:thoughtId', isAuthenticated, async (req, res) => {
     const thoughtId = parseInt(req.params.thoughtId);
     const replyText = req.body.replyText ? req.body.replyText.trim() : '';
-    const userId = req.body.userId || '';
-    const userName = req.body.userName || 'User';
-    const userEmail = req.body.userEmail || '';
+    const userName = req.session.userName;
+    const userEmail = req.session.userEmail;
 
     if (replyText !== '') {
         try {
@@ -365,18 +428,16 @@ app.post('/reply/:thoughtId', async (req, res) => {
         }
     }
 
-    res.redirect(`/dashboard?id=${userId}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`);
+    res.redirect('/dashboard');
 });
 
 // ==========================================
-// DELETE THOUGHT
+// DELETE THOUGHT (Protected Route)
 // ==========================================
-app.post('/delete-thought', async (req, res) => {
+app.post('/delete-thought', isAuthenticated, async (req, res) => {
     const thoughtId = parseInt(req.body.thoughtId);
     const thoughtUserEmail = req.body.thoughtUserEmail;
-    const userId = req.body.userId || '';
-    const userName = req.body.userName || 'User';
-    const userEmail = req.body.userEmail || '';
+    const userEmail = req.session.userEmail;
 
     if (thoughtUserEmail === userEmail) {
         try {
@@ -387,7 +448,17 @@ app.post('/delete-thought', async (req, res) => {
         }
     }
 
-    res.redirect(`/dashboard?id=${userId}&name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`);
+    res.redirect('/dashboard');
+});
+
+// ==========================================
+// CHECK AUTH STATUS (API for tabs sync)
+// ==========================================
+app.get('/api/auth-status', (req, res) => {
+    res.json({
+        isLoggedIn: !!(req.session && req.session.userId),
+        userId: req.session?.userId || null
+    });
 });
 
 // ==========================================
@@ -396,5 +467,3 @@ app.post('/delete-thought', async (req, res) => {
 app.listen(PORT, () => {
     console.log('Server is running on http://localhost:' + PORT);
 });
-
-app.use(express.static(path.join(__dirname, 'public')));
