@@ -53,7 +53,7 @@ Follow these steps to run the project locally:
 3.  **Database Configuration**
     * Make sure you have **PostgreSQL** installed and running.
     * Create a database for the project.
-    * Configure your `db.js` file with your database credentials.
+    * **⚠️ Important:** Open the `db.js` file and update the `password`, `user`, and `database` fields with your local PostgreSQL credentials.
 
 4.  **Run the Project**
     ```bash
