@@ -1,11 +1,11 @@
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
-    host: 'localhost',
-    port: 5432,
-    user: 'postgres',
-    password: 'starlink',  // ← Change this!
-    database: 'login_system'
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // Required for Supabase cloud connections
+    }
 });
 
 pool.connect((err, client, release) => {
@@ -13,7 +13,7 @@ pool.connect((err, client, release) => {
         console.error('Database connection failed:', err.message);
         return;
     }
-    console.log('Connected to PostgreSQL database.');
+    console.log('Connected to Supabase PostgreSQL database.');
     release();
 });
 

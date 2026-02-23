@@ -1,3 +1,4 @@
+require('dotenv').config(); // Add this new line!
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
@@ -5,18 +6,18 @@ const session = require('express-session');
 const db = require('./db');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // Update this line!
 
 // ==========================================
 // SESSION SETUP
 // ==========================================
 app.use(session({
-    secret: 'thoughtstream-secret-key-2024',
+    secret: process.env.SESSION_SECRET || 'thoughtstream-secret-key-2024',
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: false, // Set to true if using HTTPS
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        secure: false, // Keep false for now until you set up an SSL domain
+        maxAge: 24 * 60 * 60 * 1000 
     }
 }));
 
@@ -464,6 +465,9 @@ app.get('/api/auth-status', (req, res) => {
 // ==========================================
 // START SERVER
 // ==========================================
+// ==========================================
+// START SERVER
+// ==========================================
 app.listen(PORT, () => {
-    console.log('Server is running on http://localhost:' + PORT);
+    console.log(`Server is running on port ${PORT}`);
 });
