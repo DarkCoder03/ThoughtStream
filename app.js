@@ -36,7 +36,6 @@ function formatToIST(date) {
     return `${day}/${month}/${year}, ${hoursStr}:${minutes}:${seconds} ${ampm}`;
 }
 
-// Make it available to all templates
 app.locals.formatToIST = formatToIST;
 
 // ==========================================
@@ -330,7 +329,9 @@ app.get('/settings', isAuthenticated, async (req, res) => {
             email: userEmail,
             profilePic: user.profile_pic || null,
             success: null,
-            error: null
+            error: null,
+            passwordSuccess: null,
+            passwordError: null
         });
     } catch (err) {
         console.error('Settings error:', err);
@@ -340,13 +341,15 @@ app.get('/settings', isAuthenticated, async (req, res) => {
             email: userEmail,
             profilePic: null,
             success: null,
-            error: null
+            error: null,
+            passwordSuccess: null,
+            passwordError: null
         });
     }
 });
 
 // ==========================================
-// SETTINGS UPDATE
+// SETTINGS UPDATE (Profile)
 // ==========================================
 app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async (req, res) => {
     const userId = req.session.userId;
@@ -396,7 +399,9 @@ app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async
             email: userEmail,
             profilePic: profilePic,
             success: 'Profile updated successfully!',
-            error: null
+            error: null,
+            passwordSuccess: null,
+            passwordError: null
         });
 
     } catch (err) {
@@ -407,7 +412,112 @@ app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async
             email: userEmail,
             profilePic: null,
             success: null,
-            error: 'Failed to update profile. Please try again.'
+            error: 'Failed to update profile. Please try again.',
+            passwordSuccess: null,
+            passwordError: null
+        });
+    }
+});
+
+// ==========================================
+// CHANGE PASSWORD
+// ==========================================
+app.post('/settings/change-password', isAuthenticated, async (req, res) => {
+    const userId = req.session.userId;
+    const userEmail = req.session.userEmail;
+    const currentPassword = req.body.currentPassword ? req.body.currentPassword.trim() : '';
+    const newPassword = req.body.newPassword ? req.body.newPassword.trim() : '';
+    const confirmNewPassword = req.body.confirmNewPassword ? req.body.confirmNewPassword.trim() : '';
+
+    try {
+        // Get current user data
+        const userQuery = 'SELECT * FROM users WHERE id = $1';
+        const userResult = await db.query(userQuery, [userId]);
+        
+        if (userResult.rows.length === 0) {
+            req.session.destroy();
+            return res.redirect('/login');
+        }
+        
+        const user = userResult.rows[0];
+
+        // Validate current password
+        let validPassword = false;
+        if (user.password.startsWith('$2b$')) {
+            validPassword = await bcrypt.compare(currentPassword, user.password);
+        } else {
+            validPassword = (currentPassword === user.password);
+        }
+
+        if (!validPassword) {
+            return res.render('settings', {
+                userId: userId,
+                name: user.name,
+                email: userEmail,
+                profilePic: user.profile_pic || null,
+                success: null,
+                error: null,
+                passwordSuccess: null,
+                passwordError: 'Current password is incorrect.'
+            });
+        }
+
+        // Validate new password
+        if (newPassword.length < 6) {
+            return res.render('settings', {
+                userId: userId,
+                name: user.name,
+                email: userEmail,
+                profilePic: user.profile_pic || null,
+                success: null,
+                error: null,
+                passwordSuccess: null,
+                passwordError: 'New password must be at least 6 characters.'
+            });
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            return res.render('settings', {
+                userId: userId,
+                name: user.name,
+                email: userEmail,
+                profilePic: user.profile_pic || null,
+                success: null,
+                error: null,
+                passwordSuccess: null,
+                passwordError: 'New passwords do not match.'
+            });
+        }
+
+        // Hash and update new password
+        const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+        await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
+
+        res.render('settings', {
+            userId: userId,
+            name: user.name,
+            email: userEmail,
+            profilePic: user.profile_pic || null,
+            success: null,
+            error: null,
+            passwordSuccess: 'Password changed successfully!',
+            passwordError: null
+        });
+
+    } catch (err) {
+        console.error('Error changing password:', err);
+        const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+        const user = userResult.rows[0] || { name: '', profile_pic: null };
+        
+        res.render('settings', {
+            userId: userId,
+            name: user.name,
+            email: userEmail,
+            profilePic: user.profile_pic || null,
+            success: null,
+            error: null,
+            passwordSuccess: null,
+            passwordError: 'Failed to change password. Please try again.'
         });
     }
 });
