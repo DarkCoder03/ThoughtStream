@@ -73,11 +73,13 @@
                 <div class="profile-section">
                     <div class="profile-pic-container">
                         <div class="profile-pic" id="profilePicPreview">
-                            <% if (profilePic) { %><% if (profilePic && profilePic.startsWith('http')) { %>
-    <img src="<%= profilePic %>" alt="" id="previewImage">
-<% } else if (profilePic) { %>
-    <img src="/uploads/<%= profilePic %>" alt="" id="previewImage">
-<% } %><% } else { %><span id="profileInitial"><%= name.charAt(0).toUpperCase() %></span><% } %>
+                            <% if (profilePic && profilePic.startsWith('http')) { %>
+                                <img src="<%= profilePic %>" alt="" id="previewImage">
+                            <% } else if (profilePic) { %>
+                                <img src="/uploads/<%= profilePic %>" alt="" id="previewImage">
+                            <% } else { %>
+                                <span id="profileInitial"><%= name.charAt(0).toUpperCase() %></span>
+                            <% } %>
                         </div>
                         <label for="profilePicInput" class="profile-pic-overlay"><i class="ri-camera-line"></i></label>
                     </div>
@@ -137,7 +139,6 @@
             }
         });
 
-        // Check if logged out from another tab
         setInterval(async () => {
             try {
                 const response = await fetch('/api/auth-status');

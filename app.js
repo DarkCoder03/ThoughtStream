@@ -12,6 +12,34 @@ const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 
 // ==========================================
+// HELPER FUNCTION - Format Date to IST
+// ==========================================
+function formatToIST(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(d.getTime() + istOffset);
+    
+    const day = String(istDate.getUTCDate()).padStart(2, '0');
+    const month = String(istDate.getUTCMonth() + 1).padStart(2, '0');
+    const year = istDate.getUTCFullYear();
+    
+    let hours = istDate.getUTCHours();
+    const minutes = String(istDate.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(istDate.getUTCSeconds()).padStart(2, '0');
+    
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const hoursStr = String(hours).padStart(2, '0');
+    
+    return `${day}/${month}/${year}, ${hoursStr}:${minutes}:${seconds} ${ampm}`;
+}
+
+// Make it available to all templates
+app.locals.formatToIST = formatToIST;
+
+// ==========================================
 // SESSION SETUP
 // ==========================================
 app.use(session({
@@ -25,7 +53,7 @@ app.use(session({
 }));
 
 // ==========================================
-// MULTER SETUP FOR FILE UPLOADS (Memory Storage for Supabase)
+// MULTER SETUP FOR FILE UPLOADS
 // ==========================================
 const storage = multer.memoryStorage();
 
@@ -63,7 +91,6 @@ function isAuthenticated(req, res, next) {
     return res.redirect('/login');
 }
 
-// Admin middleware
 function isAdmin(req, res, next) {
     if (req.session && req.session.userId && req.session.isAdmin) {
         return next();
@@ -74,7 +101,6 @@ function isAdmin(req, res, next) {
 // ==========================================
 // ROUTES
 // ==========================================
-
 app.get('/', (req, res) => {
     if (req.session && req.session.userId) {
         return res.redirect('/dashboard');
@@ -103,16 +129,11 @@ app.post('/login', async (req, res) => {
         if (result.rows.length > 0) {
             const user = result.rows[0];
             
-            // Check if password is hashed (starts with $2b$) or plain text
             let validPassword = false;
             if (user.password.startsWith('$2b$')) {
-                // Password is hashed, use bcrypt compare
                 validPassword = await bcrypt.compare(password, user.password);
             } else {
-                // Password is plain text (old users), compare directly
                 validPassword = (password === user.password);
-                
-                // Upgrade to hashed password
                 if (validPassword) {
                     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
                     await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, user.id]);
@@ -173,7 +194,6 @@ app.post('/register', async (req, res) => {
             return res.render('register', { error: 'Email already registered. Please login.' });
         }
 
-        // Hash the password before storing
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const insertQuery = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *';
@@ -200,7 +220,7 @@ app.get('/logout', (req, res) => {
 });
 
 // ==========================================
-// DASHBOARD (Protected Route)
+// DASHBOARD
 // ==========================================
 app.get('/dashboard', isAuthenticated, async (req, res) => {
     const userId = req.session.userId;
@@ -286,7 +306,7 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// SETTINGS PAGE (Protected Route)
+// SETTINGS PAGE
 // ==========================================
 app.get('/settings', isAuthenticated, async (req, res) => {
     const userId = req.session.userId;
@@ -326,7 +346,7 @@ app.get('/settings', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// SETTINGS UPDATE (With Supabase Storage)
+// SETTINGS UPDATE
 // ==========================================
 app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async (req, res) => {
     const userId = req.session.userId;
@@ -393,7 +413,7 @@ app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async
 });
 
 // ==========================================
-// ADD THOUGHT (Protected Route)
+// ADD THOUGHT
 // ==========================================
 app.post('/add-thought', isAuthenticated, async (req, res) => {
     const thought = req.body.thought ? req.body.thought.trim() : '';
@@ -417,7 +437,7 @@ app.post('/add-thought', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// LIKE THOUGHT (Protected Route)
+// LIKE THOUGHT
 // ==========================================
 app.post('/like-thought', isAuthenticated, async (req, res) => {
     const thoughtId = parseInt(req.body.thoughtId);
@@ -447,7 +467,7 @@ app.post('/like-thought', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// REPLY TO THOUGHT (Protected Route)
+// REPLY TO THOUGHT
 // ==========================================
 app.post('/reply/:thoughtId', isAuthenticated, async (req, res) => {
     const thoughtId = parseInt(req.params.thoughtId);
@@ -471,7 +491,7 @@ app.post('/reply/:thoughtId', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// DELETE THOUGHT (Protected Route - Owner or Admin)
+// DELETE THOUGHT
 // ==========================================
 app.post('/delete-thought', isAuthenticated, async (req, res) => {
     const thoughtId = parseInt(req.body.thoughtId);
@@ -479,7 +499,6 @@ app.post('/delete-thought', isAuthenticated, async (req, res) => {
     const userEmail = req.session.userEmail;
     const isAdmin = req.session.isAdmin;
 
-    // Allow delete if owner OR admin
     if (thoughtUserEmail === userEmail || isAdmin) {
         try {
             await db.query('DELETE FROM replies WHERE thought_id = $1', [thoughtId]);
@@ -489,13 +508,12 @@ app.post('/delete-thought', isAuthenticated, async (req, res) => {
         }
     }
 
-    // Redirect back to where they came from
     const referer = req.get('Referer') || '/dashboard';
     res.redirect(referer);
 });
 
 // ==========================================
-// DELETE REPLY (Protected Route - Owner or Admin)
+// DELETE REPLY
 // ==========================================
 app.post('/delete-reply', isAuthenticated, async (req, res) => {
     const replyId = parseInt(req.body.replyId);
@@ -503,7 +521,6 @@ app.post('/delete-reply', isAuthenticated, async (req, res) => {
     const userEmail = req.session.userEmail;
     const isAdmin = req.session.isAdmin;
 
-    // Allow delete if owner OR admin
     if (replyUserEmail === userEmail || isAdmin) {
         try {
             await db.query('DELETE FROM replies WHERE id = $1', [replyId]);
@@ -517,11 +534,10 @@ app.post('/delete-reply', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// ADMIN PANEL (Admin Only)
+// ADMIN PANEL
 // ==========================================
 app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
     try {
-        // Get all thoughts
         const thoughtsResult = await db.query(`
             SELECT t.*, u.profile_pic 
             FROM thoughts t 
@@ -529,7 +545,6 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
             ORDER BY t.created_at DESC
         `);
 
-        // Get all replies
         const repliesResult = await db.query(`
             SELECT r.*, u.profile_pic, t.message as thought_message
             FROM replies r 
@@ -538,7 +553,6 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
             ORDER BY r.created_at DESC
         `);
 
-        // Get all users
         const usersResult = await db.query(`
             SELECT id, name, email, is_admin, created_at, profile_pic 
             FROM users 
@@ -581,36 +595,27 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
 });
 
 // ==========================================
-// ADMIN - DELETE USER (Admin Only)
+// ADMIN - DELETE USER
 // ==========================================
 app.post('/admin/delete-user', isAuthenticated, isAdmin, async (req, res) => {
     const userId = parseInt(req.body.userId);
     const currentUserId = req.session.userId;
 
-    // Prevent deleting yourself
     if (userId === currentUserId) {
         return res.redirect('/admin');
     }
 
     try {
-        // Get user email first
         const userResult = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
         if (userResult.rows.length > 0) {
             const userEmail = userResult.rows[0].email;
             
-            // Delete user's replies
             await db.query('DELETE FROM replies WHERE user_email = $1', [userEmail]);
-            
-            // Delete replies on user's thoughts
             await db.query(`
                 DELETE FROM replies WHERE thought_id IN 
                 (SELECT id FROM thoughts WHERE user_email = $1)
             `, [userEmail]);
-            
-            // Delete user's thoughts
             await db.query('DELETE FROM thoughts WHERE user_email = $1', [userEmail]);
-            
-            // Delete user
             await db.query('DELETE FROM users WHERE id = $1', [userId]);
         }
     } catch (err) {
@@ -621,7 +626,7 @@ app.post('/admin/delete-user', isAuthenticated, isAdmin, async (req, res) => {
 });
 
 // ==========================================
-// CHECK AUTH STATUS (API for tabs sync)
+// CHECK AUTH STATUS
 // ==========================================
 app.get('/api/auth-status', (req, res) => {
     res.json({

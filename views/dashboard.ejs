@@ -93,7 +93,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header class="header">
             <div class="logo">
                 <div class="logo-icon"><i class="ri-bubble-chart-fill"></i></div>
@@ -117,13 +116,11 @@
             </div>
         </header>
 
-        <!-- Welcome -->
         <section class="welcome-section">
             <h1 class="welcome-text">Welcome back, <span><%= name.split(' ')[0] %></span> ✨</h1>
             <p class="welcome-subtext">Share your thoughts with the world</p>
         </section>
 
-        <!-- Input Box -->
         <section>
             <div class="thought-input-box">
                 <form class="thought-form" method="POST" action="/add-thought">
@@ -133,7 +130,6 @@
             </div>
         </section>
 
-        <!-- Feed -->
         <section class="feed-section">
             <div class="feed-header">
                 <h2 class="feed-title"><i class="ri-global-line" style="color:#a855f7;margin-right:8px;"></i>Global Feed</h2>
@@ -162,14 +158,13 @@
                                             <span class="you-badge">(You)</span>
                                         <% } %>
                                     </div>
-                                    <div class="card-timestamp"><%= new Date(thought.timestamp).toLocaleString() %></div>
+                                    <div class="card-timestamp"><%= formatToIST(thought.timestamp) %></div>
                                 </div>
                             </div>
 
                             <p class="card-message"><%= thought.message %></p>
 
                             <div class="card-actions">
-                                <!-- Like -->
                                 <form method="POST" action="/like-thought" style="margin:0;">
                                     <input type="hidden" name="thoughtId" value="<%= thought.id %>">
                                     <button type="submit" class="action-btn <% if (thought.likedBy && thought.likedBy.includes(email)) { %>liked<% } %>">
@@ -178,13 +173,11 @@
                                     </button>
                                 </form>
 
-                                <!-- Comment Toggle -->
                                 <button type="button" class="action-btn" onclick="toggleReplies('<%= thought.id %>')">
                                     <i class="ri-chat-3-line"></i>
                                     <%= thought.replies ? thought.replies.length : 0 %>
                                 </button>
 
-                                <!-- Delete (Owner or Admin) -->
                                 <% if (thought.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %>
                                     <form method="POST" action="/delete-thought" style="margin:0;">
                                         <input type="hidden" name="thoughtId" value="<%= thought.id %>">
@@ -196,7 +189,6 @@
                                 <% } %>
                             </div>
 
-                            <!-- Replies -->
                             <div id="replies-<%= thought.id %>" class="replies-container">
                                 <% if (thought.replies && thought.replies.length > 0) { %>
                                     <% for (var j = 0; j < thought.replies.length; j++) { %>
@@ -214,9 +206,8 @@
                                             <div class="reply-content">
                                                 <div class="reply-user-name"><%= reply.userName %></div>
                                                 <div class="reply-text"><%= reply.text %></div>
-                                                <div class="reply-time"><%= new Date(reply.timestamp).toLocaleString() %></div>
+                                                <div class="reply-time"><%= formatToIST(reply.timestamp) %></div>
                                             </div>
-                                            <!-- Delete Reply (Owner or Admin) -->
                                             <% if (reply.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %>
                                                 <form method="POST" action="/delete-reply" style="margin:0;">
                                                     <input type="hidden" name="replyId" value="<%= reply.id %>">
@@ -230,7 +221,6 @@
                                     <% } %>
                                 <% } %>
 
-                                <!-- Reply Form -->
                                 <form class="reply-form" method="POST" action="/reply/<%= thought.id %>">
                                     <input type="text" name="replyText" class="reply-input" placeholder="Write a reply..." required maxlength="200">
                                     <button type="submit" class="btn-reply-submit"><i class="ri-reply-line"></i> Reply</button>
@@ -255,7 +245,6 @@
             el.classList.toggle('show');
         }
 
-        // Check auth status every 2 seconds
         setInterval(function() {
             fetch('/api/auth-status')
                 .then(function(res) { return res.json(); })
