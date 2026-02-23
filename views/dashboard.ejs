@@ -23,6 +23,7 @@
         .user-name { font-weight: 600; color: #374151; }
         .btn-settings { width: 48px; height: 48px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 22px; text-decoration: none; transition: all 0.3s; }
         .btn-settings:hover { color: #a855f7; transform: rotate(90deg); }
+        
         .welcome-section { text-align: center; padding: 50px 0 45px; }
         .welcome-text { font-size: 36px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; }
         .welcome-text span { background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -105,6 +106,17 @@
                 <span class="user-name"><%= name %></span>
                 <a href="/settings" class="btn-settings"><i class="ri-settings-3-line"></i></a>
             </div>
+
+            <div class="user-info">
+    <div class="user-avatar">
+        <!-- existing code -->
+    </div>
+    <span class="user-name"><%= name %></span>
+    <% if (isAdmin) { %>
+        <a href="/admin" class="btn-settings" style="background: #fef2f2; color: #ef4444;" title="Admin Panel"><i class="ri-shield-keyhole-line"></i></a>
+    <% } %>
+    <a href="/settings" class="btn-settings"><i class="ri-settings-3-line"></i></a>
+</div>
         </header>
 
         <!-- Welcome -->

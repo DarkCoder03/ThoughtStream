@@ -3,11 +3,13 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 const db = require('./db');
 const supabase = require('./supabaseStorage');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SALT_ROUNDS = 10;
 
 // ==========================================
 // SESSION SETUP
@@ -52,13 +54,21 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
-// AUTH MIDDLEWARE - Check if user is logged in
+// AUTH MIDDLEWARE
 // ==========================================
 function isAuthenticated(req, res, next) {
     if (req.session && req.session.userId) {
         return next();
     }
     return res.redirect('/login');
+}
+
+// Admin middleware
+function isAdmin(req, res, next) {
+    if (req.session && req.session.userId && req.session.isAdmin) {
+        return next();
+    }
+    return res.redirect('/dashboard');
 }
 
 // ==========================================
@@ -87,21 +97,40 @@ app.post('/login', async (req, res) => {
     const password = req.body.password ? req.body.password.trim() : '';
 
     try {
-        const query = 'SELECT * FROM users WHERE LOWER(email) = $1 AND password = $2';
-        const result = await db.query(query, [email, password]);
+        const query = 'SELECT * FROM users WHERE LOWER(email) = $1';
+        const result = await db.query(query, [email]);
 
         if (result.rows.length > 0) {
             const user = result.rows[0];
             
-            req.session.userId = user.id;
-            req.session.userName = user.name;
-            req.session.userEmail = user.email;
-            req.session.profilePic = user.profile_pic;
+            // Check if password is hashed (starts with $2b$) or plain text
+            let validPassword = false;
+            if (user.password.startsWith('$2b$')) {
+                // Password is hashed, use bcrypt compare
+                validPassword = await bcrypt.compare(password, user.password);
+            } else {
+                // Password is plain text (old users), compare directly
+                validPassword = (password === user.password);
+                
+                // Upgrade to hashed password
+                if (validPassword) {
+                    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+                    await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, user.id]);
+                }
+            }
             
-            return res.redirect('/dashboard');
-        } else {
-            return res.render('login', { error: 'Invalid email or password.', success: null });
+            if (validPassword) {
+                req.session.userId = user.id;
+                req.session.userName = user.name;
+                req.session.userEmail = user.email;
+                req.session.profilePic = user.profile_pic;
+                req.session.isAdmin = user.is_admin || false;
+                
+                return res.redirect('/dashboard');
+            }
         }
+        
+        return res.render('login', { error: 'Invalid email or password.', success: null });
     } catch (err) {
         console.error('Database error:', err);
         return res.render('login', { error: 'Something went wrong. Please try again.', success: null });
@@ -144,8 +173,11 @@ app.post('/register', async (req, res) => {
             return res.render('register', { error: 'Email already registered. Please login.' });
         }
 
+        // Hash the password before storing
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
         const insertQuery = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *';
-        await db.query(insertQuery, [name, email, password]);
+        await db.query(insertQuery, [name, email, hashedPassword]);
 
         return res.render('login', { error: null, success: 'Account created successfully! Please login.' });
 
@@ -174,6 +206,7 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
     const userId = req.session.userId;
     const userName = req.session.userName;
     const userEmail = req.session.userEmail;
+    const isAdmin = req.session.isAdmin || false;
 
     try {
         const userQuery = 'SELECT * FROM users WHERE id = $1';
@@ -236,7 +269,8 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
             name: user.name,
             email: userEmail,
             profilePic: profilePic,
-            thoughts: thoughts
+            thoughts: thoughts,
+            isAdmin: isAdmin
         });
     } catch (err) {
         console.error('Dashboard error:', err);
@@ -245,7 +279,8 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
             name: userName,
             email: userEmail,
             profilePic: null,
-            thoughts: []
+            thoughts: [],
+            isAdmin: isAdmin
         });
     }
 });
@@ -310,7 +345,6 @@ app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async
         let profilePic = null;
         
         if (req.file) {
-            // Upload to Supabase Storage
             const fileName = `${userId}-${Date.now()}-${req.file.originalname}`;
             
             const { data, error } = await supabase.storage
@@ -323,7 +357,6 @@ app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async
             if (error) {
                 console.error('Supabase upload error:', error);
             } else {
-                // Get public URL
                 const { data: urlData } = supabase.storage
                     .from('profile-pics')
                     .getPublicUrl(fileName);
@@ -438,14 +471,16 @@ app.post('/reply/:thoughtId', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// DELETE THOUGHT (Protected Route)
+// DELETE THOUGHT (Protected Route - Owner or Admin)
 // ==========================================
 app.post('/delete-thought', isAuthenticated, async (req, res) => {
     const thoughtId = parseInt(req.body.thoughtId);
     const thoughtUserEmail = req.body.thoughtUserEmail;
     const userEmail = req.session.userEmail;
+    const isAdmin = req.session.isAdmin;
 
-    if (thoughtUserEmail === userEmail) {
+    // Allow delete if owner OR admin
+    if (thoughtUserEmail === userEmail || isAdmin) {
         try {
             await db.query('DELETE FROM replies WHERE thought_id = $1', [thoughtId]);
             await db.query('DELETE FROM thoughts WHERE id = $1', [thoughtId]);
@@ -454,7 +489,135 @@ app.post('/delete-thought', isAuthenticated, async (req, res) => {
         }
     }
 
-    res.redirect('/dashboard');
+    // Redirect back to where they came from
+    const referer = req.get('Referer') || '/dashboard';
+    res.redirect(referer);
+});
+
+// ==========================================
+// DELETE REPLY (Protected Route - Owner or Admin)
+// ==========================================
+app.post('/delete-reply', isAuthenticated, async (req, res) => {
+    const replyId = parseInt(req.body.replyId);
+    const replyUserEmail = req.body.replyUserEmail;
+    const userEmail = req.session.userEmail;
+    const isAdmin = req.session.isAdmin;
+
+    // Allow delete if owner OR admin
+    if (replyUserEmail === userEmail || isAdmin) {
+        try {
+            await db.query('DELETE FROM replies WHERE id = $1', [replyId]);
+        } catch (err) {
+            console.error('Delete reply error:', err);
+        }
+    }
+
+    const referer = req.get('Referer') || '/dashboard';
+    res.redirect(referer);
+});
+
+// ==========================================
+// ADMIN PANEL (Admin Only)
+// ==========================================
+app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        // Get all thoughts
+        const thoughtsResult = await db.query(`
+            SELECT t.*, u.profile_pic 
+            FROM thoughts t 
+            LEFT JOIN users u ON t.user_email = u.email 
+            ORDER BY t.created_at DESC
+        `);
+
+        // Get all replies
+        const repliesResult = await db.query(`
+            SELECT r.*, u.profile_pic, t.message as thought_message
+            FROM replies r 
+            LEFT JOIN users u ON r.user_email = u.email 
+            LEFT JOIN thoughts t ON r.thought_id = t.id
+            ORDER BY r.created_at DESC
+        `);
+
+        // Get all users
+        const usersResult = await db.query(`
+            SELECT id, name, email, is_admin, created_at, profile_pic 
+            FROM users 
+            ORDER BY created_at DESC
+        `);
+
+        const thoughts = thoughtsResult.rows.map(t => ({
+            id: t.id,
+            userName: t.user_name,
+            userEmail: t.user_email,
+            message: t.message,
+            timestamp: t.created_at,
+            profilePic: t.profile_pic
+        }));
+
+        const replies = repliesResult.rows.map(r => ({
+            id: r.id,
+            thoughtId: r.thought_id,
+            userName: r.user_name,
+            userEmail: r.user_email,
+            text: r.reply_text,
+            timestamp: r.created_at,
+            thoughtMessage: r.thought_message,
+            profilePic: r.profile_pic
+        }));
+
+        const users = usersResult.rows;
+
+        res.render('admin', {
+            thoughts: thoughts,
+            replies: replies,
+            users: users,
+            adminName: req.session.userName
+        });
+
+    } catch (err) {
+        console.error('Admin panel error:', err);
+        res.redirect('/dashboard');
+    }
+});
+
+// ==========================================
+// ADMIN - DELETE USER (Admin Only)
+// ==========================================
+app.post('/admin/delete-user', isAuthenticated, isAdmin, async (req, res) => {
+    const userId = parseInt(req.body.userId);
+    const currentUserId = req.session.userId;
+
+    // Prevent deleting yourself
+    if (userId === currentUserId) {
+        return res.redirect('/admin');
+    }
+
+    try {
+        // Get user email first
+        const userResult = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length > 0) {
+            const userEmail = userResult.rows[0].email;
+            
+            // Delete user's replies
+            await db.query('DELETE FROM replies WHERE user_email = $1', [userEmail]);
+            
+            // Delete replies on user's thoughts
+            await db.query(`
+                DELETE FROM replies WHERE thought_id IN 
+                (SELECT id FROM thoughts WHERE user_email = $1)
+            `, [userEmail]);
+            
+            // Delete user's thoughts
+            await db.query('DELETE FROM thoughts WHERE user_email = $1', [userEmail]);
+            
+            // Delete user
+            await db.query('DELETE FROM users WHERE id = $1', [userId]);
+        }
+    } catch (err) {
+        console.error('Delete user error:', err);
+    }
+
+    res.redirect('/admin');
 });
 
 // ==========================================
