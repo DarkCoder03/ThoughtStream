@@ -17,13 +17,15 @@
         .logo-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 16px; display: flex; align-items: center; justify-content: center; }
         .logo-icon i { font-size: 26px; color: white; }
         .logo-text { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .user-info { display: flex; align-items: center; gap: 15px; }
-        .user-avatar { width: 48px; height: 48px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 18px; overflow: hidden; }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; overflow: hidden; flex-shrink: 0; }
         .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .user-name { font-weight: 600; color: #374151; }
-        .btn-settings { width: 48px; height: 48px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 22px; text-decoration: none; transition: all 0.3s; }
+        .user-name { font-weight: 600; color: #374151; font-size: 14px; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .header-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; text-decoration: none; transition: all 0.3s; flex-shrink: 0; }
+        .btn-settings { background: #f3f4f6; color: #6b7280; }
         .btn-settings:hover { color: #a855f7; transform: rotate(90deg); }
-        
+        .btn-admin { background: #fef2f2; color: #ef4444; }
+        .btn-admin:hover { background: #fee2e2; transform: scale(1.05); }
         .welcome-section { text-align: center; padding: 50px 0 45px; }
         .welcome-text { font-size: 36px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; }
         .welcome-text span { background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -43,8 +45,9 @@
         .thought-card:hover { box-shadow: 0 8px 30px rgba(168,85,247,0.1); }
         .own-thought { border-left: 3px solid #a855f7; }
         .card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-        .card-avatar { width: 46px; height: 46px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; overflow: hidden; }
+        .card-avatar { width: 46px; height: 46px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; overflow: hidden; flex-shrink: 0; }
         .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .card-user-info { flex: 1; }
         .card-user-name { font-weight: 600; color: #1a1a2e; }
         .you-badge { color: #a855f7; font-size: 12px; margin-left: 5px; }
         .card-timestamp { font-size: 13px; color: #b4b4b4; margin-top: 2px; }
@@ -59,13 +62,14 @@
         .replies-container { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #f3f4f6; }
         .replies-container.show { display: block; }
         .reply-item { display: flex; gap: 12px; padding: 12px; background: #f9fafb; border-radius: 12px; margin-bottom: 10px; }
-        .reply-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; overflow: hidden; }
+        .reply-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; overflow: hidden; flex-shrink: 0; }
         .reply-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .reply-content { flex: 1; }
         .reply-user-name { font-weight: 600; font-size: 13px; color: #1a1a2e; }
         .reply-text { font-size: 14px; color: #6b7280; margin-top: 3px; }
         .reply-time { font-size: 11px; color: #b4b4b4; margin-top: 5px; }
         .reply-form { display: flex; gap: 10px; margin-top: 12px; }
-        .reply-input { flex: 1; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 25px; font-size: 14px; outline: none; }
+        .reply-input { flex: 1; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 25px; font-size: 14px; outline: none; font-family: inherit; }
         .reply-input:focus { border-color: #a855f7; }
         .btn-reply-submit { padding: 12px 20px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border: none; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; }
         .empty-state { text-align: center; padding: 80px 20px; }
@@ -75,13 +79,15 @@
         .empty-text { color: #9ca3af; }
         @media (max-width: 600px) {
             .header { flex-wrap: wrap; gap: 15px; }
-            .user-info { width: 100%; justify-content: space-between; }
+            .user-info { order: 2; width: 100%; justify-content: flex-end; }
+            .logo { order: 1; }
             .welcome-text { font-size: 28px; }
             .thought-input-box { border-radius: 25px; padding: 6px 8px 6px 18px; }
             .card-actions { flex-wrap: wrap; }
             .action-btn.delete-btn { margin-left: 0; }
             .reply-form { flex-direction: column; }
             .btn-reply-submit { width: 100%; }
+            .user-name { max-width: 80px; }
         }
     </style>
 </head>
@@ -104,19 +110,11 @@
                     <% } %>
                 </div>
                 <span class="user-name"><%= name %></span>
-                <a href="/settings" class="btn-settings"><i class="ri-settings-3-line"></i></a>
+                <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                    <a href="/admin" class="header-btn btn-admin" title="Admin Panel"><i class="ri-shield-keyhole-line"></i></a>
+                <% } %>
+                <a href="/settings" class="header-btn btn-settings" title="Settings"><i class="ri-settings-3-line"></i></a>
             </div>
-
-            <div class="user-info">
-    <div class="user-avatar">
-        <!-- existing code -->
-    </div>
-    <span class="user-name"><%= name %></span>
-    <% if (isAdmin) { %>
-        <a href="/admin" class="btn-settings" style="background: #fef2f2; color: #ef4444;" title="Admin Panel"><i class="ri-shield-keyhole-line"></i></a>
-    <% } %>
-    <a href="/settings" class="btn-settings"><i class="ri-settings-3-line"></i></a>
-</div>
         </header>
 
         <!-- Welcome -->
@@ -157,7 +155,7 @@
                                         <%= thought.userName.charAt(0).toUpperCase() %>
                                     <% } %>
                                 </div>
-                                <div>
+                                <div class="card-user-info">
                                     <div class="card-user-name">
                                         <%= thought.userName %>
                                         <% if (thought.userEmail === email) { %>
@@ -186,8 +184,8 @@
                                     <%= thought.replies ? thought.replies.length : 0 %>
                                 </button>
 
-                                <!-- Delete -->
-                                <% if (thought.userEmail === email) { %>
+                                <!-- Delete (Owner or Admin) -->
+                                <% if (thought.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %>
                                     <form method="POST" action="/delete-thought" style="margin:0;">
                                         <input type="hidden" name="thoughtId" value="<%= thought.id %>">
                                         <input type="hidden" name="thoughtUserEmail" value="<%= thought.userEmail %>">
@@ -213,11 +211,21 @@
                                                     <%= reply.userName.charAt(0).toUpperCase() %>
                                                 <% } %>
                                             </div>
-                                            <div>
+                                            <div class="reply-content">
                                                 <div class="reply-user-name"><%= reply.userName %></div>
                                                 <div class="reply-text"><%= reply.text %></div>
                                                 <div class="reply-time"><%= new Date(reply.timestamp).toLocaleString() %></div>
                                             </div>
+                                            <!-- Delete Reply (Owner or Admin) -->
+                                            <% if (reply.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %>
+                                                <form method="POST" action="/delete-reply" style="margin:0;">
+                                                    <input type="hidden" name="replyId" value="<%= reply.id %>">
+                                                    <input type="hidden" name="replyUserEmail" value="<%= reply.userEmail %>">
+                                                    <button type="submit" class="action-btn delete-btn" style="padding: 6px 10px; margin-left: 0;" onclick="return confirm('Delete this reply?')">
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                </form>
+                                            <% } %>
                                         </div>
                                     <% } %>
                                 <% } %>
