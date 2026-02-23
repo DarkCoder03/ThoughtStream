@@ -94,12 +94,11 @@
             </div>
             <div class="user-info">
                 <div class="user-avatar">
-                    <% if (profilePic) { %>
-                        <<% if (profilePic && profilePic.startsWith('http')) { %>
-    <img src="<%= profilePic %>" alt="Profile">
-<% } else if (profilePic) { %>
-    <img src="/uploads/<%= profilePic %>" alt="Profile">
-<% } %>
+                    <% if (profilePic && profilePic.startsWith('http')) { %>
+                        <img src="<%= profilePic %>" alt="Profile">
+                    <% } else if (profilePic) { %>
+                        <img src="/uploads/<%= profilePic %>" alt="Profile">
+                    <% } else { %>
                         <%= name.charAt(0).toUpperCase() %>
                     <% } %>
                 </div>
@@ -138,7 +137,9 @@
                         <article class="thought-card <% if (thought.userEmail === email) { %>own-thought<% } %>">
                             <div class="card-header">
                                 <div class="card-avatar">
-                                    <% if (thought.profilePic) { %>
+                                    <% if (thought.profilePic && thought.profilePic.startsWith('http')) { %>
+                                        <img src="<%= thought.profilePic %>" alt="">
+                                    <% } else if (thought.profilePic) { %>
                                         <img src="/uploads/<%= thought.profilePic %>" alt="">
                                     <% } else { %>
                                         <%= thought.userName.charAt(0).toUpperCase() %>
@@ -192,7 +193,9 @@
                                         <% var reply = thought.replies[j]; %>
                                         <div class="reply-item">
                                             <div class="reply-avatar">
-                                                <% if (reply.profilePic) { %>
+                                                <% if (reply.profilePic && reply.profilePic.startsWith('http')) { %>
+                                                    <img src="<%= reply.profilePic %>" alt="">
+                                                <% } else if (reply.profilePic) { %>
                                                     <img src="/uploads/<%= reply.profilePic %>" alt="">
                                                 <% } else { %>
                                                     <%= reply.userName.charAt(0).toUpperCase() %>
