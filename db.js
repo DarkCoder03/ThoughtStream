@@ -3,9 +3,7 @@ const { Pool } = require('pg');
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false // Required for Supabase cloud connections
-    }
+    ssl: false
 });
 
 pool.connect((err, client, release) => {
