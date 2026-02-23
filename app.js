@@ -1,12 +1,13 @@
-require('dotenv').config(); // Add this new line!
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const session = require('express-session');
 const db = require('./db');
+const supabase = require('./supabaseStorage');
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Update this line!
+const PORT = process.env.PORT || 3000;
 
 // ==========================================
 // SESSION SETUP
@@ -16,24 +17,15 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: false, // Keep false for now until you set up an SSL domain
+        secure: false,
         maxAge: 24 * 60 * 60 * 1000 
     }
 }));
 
 // ==========================================
-// MULTER SETUP FOR FILE UPLOADS
+// MULTER SETUP FOR FILE UPLOADS (Memory Storage for Supabase)
 // ==========================================
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'public/uploads/');
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, uniqueSuffix + ext);
-    }
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -84,7 +76,6 @@ app.get('/', (req, res) => {
 // LOGIN
 // ==========================================
 app.get('/login', (req, res) => {
-    // If already logged in, redirect to dashboard
     if (req.session && req.session.userId) {
         return res.redirect('/dashboard');
     }
@@ -102,7 +93,6 @@ app.post('/login', async (req, res) => {
         if (result.rows.length > 0) {
             const user = result.rows[0];
             
-            // Store user data in session
             req.session.userId = user.id;
             req.session.userName = user.name;
             req.session.userEmail = user.email;
@@ -122,7 +112,6 @@ app.post('/login', async (req, res) => {
 // REGISTER
 // ==========================================
 app.get('/register', (req, res) => {
-    // If already logged in, redirect to dashboard
     if (req.session && req.session.userId) {
         return res.redirect('/dashboard');
     }
@@ -187,12 +176,10 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
     const userEmail = req.session.userEmail;
 
     try {
-        // Get latest user data from database
         const userQuery = 'SELECT * FROM users WHERE id = $1';
         const userResult = await db.query(userQuery, [userId]);
         
         if (userResult.rows.length === 0) {
-            // User not found, destroy session
             req.session.destroy();
             return res.redirect('/login');
         }
@@ -200,7 +187,6 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
         const user = userResult.rows[0];
         const profilePic = user.profile_pic || null;
         
-        // Update session with latest data
         req.session.userName = user.name;
         req.session.profilePic = user.profile_pic;
 
@@ -304,6 +290,9 @@ app.get('/settings', isAuthenticated, async (req, res) => {
     }
 });
 
+// ==========================================
+// SETTINGS UPDATE (With Supabase Storage)
+// ==========================================
 app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async (req, res) => {
     const userId = req.session.userId;
     const userEmail = req.session.userEmail;
@@ -315,18 +304,34 @@ app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async
             await db.query('UPDATE users SET name = $1 WHERE id = $2', [newName, userId]);
             await db.query('UPDATE thoughts SET user_name = $1 WHERE user_email = $2', [newName, userEmail]);
             await db.query('UPDATE replies SET user_name = $1 WHERE user_email = $2', [newName, userEmail]);
-            
-            // Update session
             req.session.userName = newName;
         }
 
         let profilePic = null;
+        
         if (req.file) {
-            profilePic = req.file.filename;
-            await db.query('UPDATE users SET profile_pic = $1 WHERE id = $2', [profilePic, userId]);
+            // Upload to Supabase Storage
+            const fileName = `${userId}-${Date.now()}-${req.file.originalname}`;
             
-            // Update session
-            req.session.profilePic = profilePic;
+            const { data, error } = await supabase.storage
+                .from('profile-pics')
+                .upload(fileName, req.file.buffer, {
+                    contentType: req.file.mimetype,
+                    upsert: true
+                });
+
+            if (error) {
+                console.error('Supabase upload error:', error);
+            } else {
+                // Get public URL
+                const { data: urlData } = supabase.storage
+                    .from('profile-pics')
+                    .getPublicUrl(fileName);
+                
+                profilePic = urlData.publicUrl;
+                await db.query('UPDATE users SET profile_pic = $1 WHERE id = $2', [profilePic, userId]);
+                req.session.profilePic = profilePic;
+            }
         } else {
             const result = await db.query('SELECT profile_pic FROM users WHERE id = $1', [userId]);
             profilePic = result.rows[0]?.profile_pic || null;
@@ -462,9 +467,6 @@ app.get('/api/auth-status', (req, res) => {
     });
 });
 
-// ==========================================
-// START SERVER
-// ==========================================
 // ==========================================
 // START SERVER
 // ==========================================

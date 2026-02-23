@@ -95,8 +95,11 @@
             <div class="user-info">
                 <div class="user-avatar">
                     <% if (profilePic) { %>
-                        <img src="/uploads/<%= profilePic %>" alt="Profile">
-                    <% } else { %>
+                        <<% if (profilePic && profilePic.startsWith('http')) { %>
+    <img src="<%= profilePic %>" alt="Profile">
+<% } else if (profilePic) { %>
+    <img src="/uploads/<%= profilePic %>" alt="Profile">
+<% } %>
                         <%= name.charAt(0).toUpperCase() %>
                     <% } %>
                 </div>
