@@ -5,58 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - ThoughtStream</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; min-height: 100vh; background: #f8f9fa; color: #1a1a2e; }
-        .top-nav { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 20px; position: sticky; top: 0; z-index: 100; }
-        .top-nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        
+        .top-nav { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 14px 20px; position: sticky; top: 0; z-index: 100; }
+        .top-nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .logo-icon i { font-size: 20px; color: white; }
-        .logo-text { font-size: 18px; font-weight: 700; color: #ef4444; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon i { font-size: 22px; color: white; }
+        .logo-text { font-size: 20px; font-weight: 700; color: #ef4444; }
         .nav-actions { display: flex; align-items: center; gap: 12px; }
-        .admin-badge { background: #fef2f2; color: #ef4444; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-        .back-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: #f3f4f6; border: none; border-radius: 20px; color: #374151; font-weight: 500; text-decoration: none; font-size: 14px; transition: all 0.3s; }
+        .admin-badge { background: #fef2f2; color: #ef4444; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .back-btn { display: flex; align-items: center; gap: 6px; padding: 10px 18px; background: #f3f4f6; border: none; border-radius: 20px; color: #374151; font-weight: 500; text-decoration: none; font-size: 14px; transition: all 0.3s ease; }
         .back-btn:hover { background: #e5e7eb; }
+
         .container { max-width: 1200px; margin: 0 auto; padding: 25px 20px; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 25px; }
-        .stat-card { background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #e5e7eb; text-align: center; }
-        .stat-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 22px; }
-        .stat-icon.purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
-        .stat-icon.pink { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
-        .stat-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 25px; }
+        .stat-card { background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #e5e7eb; text-align: center; transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 24px; }
+        .stat-icon.purple { background: rgba(168,85,247,0.1); color: #a855f7; }
+        .stat-icon.pink { background: rgba(236,72,153,0.1); color: #ec4899; }
+        .stat-icon.blue { background: rgba(59,130,246,0.1); color: #3b82f6; }
+        .stat-icon.green { background: rgba(34,197,94,0.1); color: #22c55e; }
         .stat-number { font-size: 28px; font-weight: 700; color: #1a1a2e; }
         .stat-label { color: #9ca3af; font-size: 13px; margin-top: 4px; }
+
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab { padding: 10px 20px; background: #fff; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
         .tab.active { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border-color: transparent; }
         .tab:hover:not(.active) { border-color: #a855f7; }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 12px; border: 1px solid #e5e7eb; }
+
+        .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 12px; border: 1px solid #e5e7eb; transition: all 0.3s ease; }
+        .card:hover { box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 12px; flex-wrap: wrap; }
         .card-user { display: flex; align-items: center; gap: 10px; }
-        .card-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px; overflow: hidden; }
+        .card-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 15px; overflow: hidden; flex-shrink: 0; }
         .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .card-name { font-weight: 600; color: #1a1a2e; font-size: 14px; }
-        .card-email { font-size: 11px; color: #9ca3af; }
-        .card-message { color: #4b5563; line-height: 1.5; margin-bottom: 10px; padding: 10px; background: #f9fafb; border-radius: 8px; font-size: 14px; }
-        .card-meta { font-size: 11px; color: #9ca3af; font-style: italic; }
-        .card-time { font-size: 11px; color: #9ca3af; display: flex; align-items: center; gap: 4px; }
+        .card-email { font-size: 12px; color: #9ca3af; }
+        .card-message { color: #4b5563; line-height: 1.6; margin-bottom: 12px; padding: 14px; background: #f9fafb; border-radius: 10px; font-size: 14px; }
+        .card-meta { font-size: 12px; color: #9ca3af; font-style: italic; margin-bottom: 10px; }
+        .card-time { font-size: 12px; color: #9ca3af; display: flex; align-items: center; gap: 4px; }
+        .thought-image { max-width: 200px; max-height: 150px; border-radius: 10px; margin-bottom: 12px; object-fit: cover; }
+
         .btn-danger { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
-        .btn-danger:hover { background: #fee2e2; }
+        .btn-danger:hover { background: #fee2e2; border-color: #ef4444; }
+
+        .table-container { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; }
         .table-wrapper { overflow-x: auto; }
-        .user-table { width: 100%; border-collapse: collapse; min-width: 500px; font-size: 14px; }
-        .user-table th, .user-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        .user-table th { background: #f9fafb; font-weight: 600; color: #374151; }
-        .user-table tr:hover { background: #f9fafb; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+        th { background: #f9fafb; font-weight: 600; color: #374151; position: sticky; top: 0; }
+        tr:hover { background: #fafafa; }
+        tr:last-child td { border-bottom: none; }
+
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
         .badge-admin { background: #fef3c7; color: #d97706; }
         .badge-user { background: #e0e7ff; color: #4f46e5; }
+        .badge-verified { background: #dcfce7; color: #16a34a; }
+        .badge-unverified { background: #fef2f2; color: #ef4444; }
+
+        .user-cell { display: flex; align-items: center; gap: 10px; }
+        .user-cell .avatar { width: 36px; height: 36px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px; overflow: hidden; flex-shrink: 0; }
+        .user-cell .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
         .empty-state { text-align: center; padding: 50px 20px; color: #9ca3af; }
-        .empty-state i { font-size: 40px; margin-bottom: 12px; }
+        .empty-state i { font-size: 40px; margin-bottom: 12px; display: block; }
+
+        @media (max-width: 768px) {
+            .top-nav-container { flex-direction: column; align-items: flex-start; }
+            .nav-actions { width: 100%; justify-content: space-between; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 5px; }
+            .tab { white-space: nowrap; flex-shrink: 0; }
+        }
     </style>
 </head>
 <body>
@@ -67,18 +97,24 @@
                 <span class="logo-text">Admin Panel</span>
             </a>
             <div class="nav-actions">
-                <div class="admin-badge"><i class="ri-user-line"></i> <%= adminName %></div>
+                <div class="admin-badge"><i class="ri-user-star-line"></i> <%= adminName %></div>
                 <a href="/dashboard" class="back-btn"><i class="ri-arrow-left-line"></i> Back</a>
             </div>
         </div>
     </nav>
 
     <div class="container">
+        <!-- Stats -->
         <div class="stats">
             <div class="stat-card">
                 <div class="stat-icon purple"><i class="ri-user-line"></i></div>
                 <div class="stat-number"><%= users.length %></div>
-                <div class="stat-label">Users</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="ri-user-follow-line"></i></div>
+                <div class="stat-number"><%= users.filter(u => u.is_verified).length %></div>
+                <div class="stat-label">Verified</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon pink"><i class="ri-chat-3-line"></i></div>
@@ -92,13 +128,83 @@
             </div>
         </div>
 
+        <!-- Tabs -->
         <div class="tabs">
-            <div class="tab active" onclick="showTab('thoughts', this)"><i class="ri-chat-3-line"></i> Thoughts</div>
+            <div class="tab active" onclick="showTab('users', this)"><i class="ri-user-line"></i> Users</div>
+            <div class="tab" onclick="showTab('thoughts', this)"><i class="ri-chat-3-line"></i> Thoughts</div>
             <div class="tab" onclick="showTab('replies', this)"><i class="ri-reply-line"></i> Replies</div>
-            <div class="tab" onclick="showTab('users', this)"><i class="ri-user-line"></i> Users</div>
         </div>
 
-        <div id="thoughts-tab" class="tab-content active">
+        <!-- Users Tab -->
+        <div id="users-tab" class="tab-content active">
+            <div class="table-container">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% users.forEach(function(user) { %>
+                                <tr>
+                                    <td><strong>#<%= user.id %></strong></td>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="avatar">
+                                                <% if (user.profile_pic && user.profile_pic.startsWith('http')) { %>
+                                                    <img src="<%= user.profile_pic %>" alt="">
+                                                <% } else { %>
+                                                    <%= user.name.charAt(0).toUpperCase() %>
+                                                <% } %>
+                                            </div>
+                                            <span><%= user.name %></span>
+                                        </div>
+                                    </td>
+                                    <td><%= user.email %></td>
+                                    <td>
+                                        <% if (user.is_admin) { %>
+                                            <span class="badge badge-admin"><i class="ri-shield-star-line"></i> Admin</span>
+                                        <% } else { %>
+                                            <span class="badge badge-user"><i class="ri-user-line"></i> User</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (user.is_verified) { %>
+                                            <span class="badge badge-verified"><i class="ri-checkbox-circle-line"></i> Verified</span>
+                                        <% } else { %>
+                                            <span class="badge badge-unverified"><i class="ri-close-circle-line"></i> Unverified</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= formatToIST(user.created_at) %></td>
+                                    <td>
+                                        <% if (!user.is_admin) { %>
+                                            <form method="POST" action="/admin/delete-user" style="margin:0;">
+                                                <input type="hidden" name="userId" value="<%= user.id %>">
+                                                <button type="submit" class="btn-danger" onclick="return confirm('Delete this user and all their content?')">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
+                                            </form>
+                                        <% } else { %>
+                                            <span style="color:#9ca3af;">—</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thoughts Tab -->
+        <div id="thoughts-tab" class="tab-content">
             <% if (thoughts.length > 0) { %>
                 <% thoughts.forEach(function(thought) { %>
                     <div class="card">
@@ -107,8 +213,6 @@
                                 <div class="card-avatar">
                                     <% if (thought.profilePic && thought.profilePic.startsWith('http')) { %>
                                         <img src="<%= thought.profilePic %>" alt="">
-                                    <% } else if (thought.profilePic) { %>
-                                        <img src="/uploads/<%= thought.profilePic %>" alt="">
                                     <% } else { %>
                                         <%= thought.userName.charAt(0).toUpperCase() %>
                                     <% } %>
@@ -118,21 +222,32 @@
                                     <div class="card-email"><%= thought.userEmail %></div>
                                 </div>
                             </div>
-                            <form method="POST" action="/delete-thought" style="margin:0;">
+                            <form method="POST" action="/api/delete-thought" style="margin:0;">
                                 <input type="hidden" name="thoughtId" value="<%= thought.id %>">
                                 <input type="hidden" name="thoughtUserEmail" value="<%= thought.userEmail %>">
-                                <button type="submit" class="btn-danger" onclick="return confirm('Delete?')"><i class="ri-delete-bin-line"></i> Delete</button>
+                                <button type="submit" class="btn-danger" onclick="return confirm('Delete this thought?')">
+                                    <i class="ri-delete-bin-line"></i> Delete
+                                </button>
                             </form>
                         </div>
-                        <div class="card-message"><%= thought.message %></div>
+                        <% if (thought.message) { %>
+                            <div class="card-message"><%= thought.message %></div>
+                        <% } %>
+                        <% if (thought.image) { %>
+                            <img src="<%= thought.image %>" alt="" class="thought-image">
+                        <% } %>
                         <div class="card-time"><i class="ri-time-line"></i> <%= formatToIST(thought.timestamp) %></div>
                     </div>
                 <% }); %>
             <% } else { %>
-                <div class="empty-state"><i class="ri-chat-3-line"></i><p>No thoughts</p></div>
+                <div class="empty-state">
+                    <i class="ri-chat-3-line"></i>
+                    <p>No thoughts yet</p>
+                </div>
             <% } %>
         </div>
 
+        <!-- Replies Tab -->
         <div id="replies-tab" class="tab-content">
             <% if (replies.length > 0) { %>
                 <% replies.forEach(function(reply) { %>
@@ -142,8 +257,6 @@
                                 <div class="card-avatar">
                                     <% if (reply.profilePic && reply.profilePic.startsWith('http')) { %>
                                         <img src="<%= reply.profilePic %>" alt="">
-                                    <% } else if (reply.profilePic) { %>
-                                        <img src="/uploads/<%= reply.profilePic %>" alt="">
                                     <% } else { %>
                                         <%= reply.userName.charAt(0).toUpperCase() %>
                                     <% } %>
@@ -153,49 +266,29 @@
                                     <div class="card-email"><%= reply.userEmail %></div>
                                 </div>
                             </div>
-                            <form method="POST" action="/delete-reply" style="margin:0;">
+                            <form method="POST" action="/api/delete-reply" style="margin:0;">
                                 <input type="hidden" name="replyId" value="<%= reply.id %>">
                                 <input type="hidden" name="replyUserEmail" value="<%= reply.userEmail %>">
-                                <button type="submit" class="btn-danger" onclick="return confirm('Delete?')"><i class="ri-delete-bin-line"></i> Delete</button>
+                                <button type="submit" class="btn-danger" onclick="return confirm('Delete this reply?')">
+                                    <i class="ri-delete-bin-line"></i> Delete
+                                </button>
                             </form>
                         </div>
                         <div class="card-message"><%= reply.text %></div>
-                        <% if (reply.thoughtMessage) { %><div class="card-meta">Reply to: "<%= reply.thoughtMessage.substring(0, 50) %><%= reply.thoughtMessage.length > 50 ? '...' : '' %>"</div><% } %>
+                        <% if (reply.thoughtMessage) { %>
+                            <div class="card-meta">
+                                <i class="ri-reply-line"></i> Reply to: "<%= reply.thoughtMessage.substring(0, 60) %><%= reply.thoughtMessage.length > 60 ? '...' : '' %>"
+                            </div>
+                        <% } %>
                         <div class="card-time"><i class="ri-time-line"></i> <%= formatToIST(reply.timestamp) %></div>
                     </div>
                 <% }); %>
             <% } else { %>
-                <div class="empty-state"><i class="ri-reply-line"></i><p>No replies</p></div>
-            <% } %>
-        </div>
-
-        <div id="users-tab" class="tab-content">
-            <div class="card" style="padding:0;overflow:hidden;">
-                <div class="table-wrapper">
-                    <table class="user-table">
-                        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Action</th></tr></thead>
-                        <tbody>
-                            <% users.forEach(function(user) { %>
-                                <tr>
-                                    <td><%= user.id %></td>
-                                    <td><%= user.name %></td>
-                                    <td><%= user.email %></td>
-                                    <td><% if (user.is_admin) { %><span class="badge badge-admin">Admin</span><% } else { %><span class="badge badge-user">User</span><% } %></td>
-                                    <td><%= formatToIST(user.created_at) %></td>
-                                    <td>
-                                        <% if (!user.is_admin) { %>
-                                            <form method="POST" action="/admin/delete-user" style="margin:0;">
-                                                <input type="hidden" name="userId" value="<%= user.id %>">
-                                                <button type="submit" class="btn-danger" onclick="return confirm('Delete user and all content?')"><i class="ri-delete-bin-line"></i></button>
-                                            </form>
-                                        <% } else { %>-<% } %>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        </tbody>
-                    </table>
+                <div class="empty-state">
+                    <i class="ri-reply-line"></i>
+                    <p>No replies yet</p>
                 </div>
-            </div>
+            <% } %>
         </div>
     </div>
 

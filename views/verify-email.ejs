@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - ThoughtStream</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: linear-gradient(180deg, #f8f9fa 0%, #f3e8ff 50%, #fce7f3 100%); display: flex; flex-direction: column; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+
+        .top-nav { background: rgba(255,255,255,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(229,231,235,0.6); padding: 14px 20px; }
+        .top-nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: center; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon i { font-size: 22px; color: white; }
+        .logo-text { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .main-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+
+        .verify-container { background: white; border-radius: 28px; padding: 45px 40px; max-width: 440px; width: 100%; box-shadow: 0 20px 60px rgba(168,85,247,0.1); animation: fadeIn 0.5s ease; text-align: center; }
+
+        .verify-icon { width: 90px; height: 90px; background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(236,72,153,0.1)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; }
+        .verify-icon i { font-size: 42px; color: #a855f7; }
+
+        h1 { font-size: 26px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; }
+        .subtitle { color: #6b7280; font-size: 15px; margin-bottom: 8px; }
+        .email-display { color: #a855f7; font-weight: 600; font-size: 15px; margin-bottom: 30px; }
+
+        .otp-form { margin-bottom: 25px; }
+
+        .otp-inputs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
+        .otp-input { width: 52px; height: 60px; border: 2px solid #e5e7eb; border-radius: 14px; font-size: 24px; font-weight: 700; text-align: center; color: #1a1a2e; outline: none; transition: all 0.3s ease; font-family: 'Courier New', monospace; }
+        .otp-input:focus { border-color: #a855f7; box-shadow: 0 0 0 4px rgba(168,85,247,0.1); }
+        .otp-input.error { border-color: #ef4444; animation: shake 0.4s ease; }
+        .otp-input.success { border-color: #22c55e; background: #f0fdf4; }
+
+        .btn-verify { width: 100%; padding: 16px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-verify:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168,85,247,0.3); }
+        .btn-verify:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .resend-section { margin-top: 25px; padding-top: 25px; border-top: 1px solid #f3f4f6; }
+        .resend-text { color: #6b7280; font-size: 14px; margin-bottom: 12px; }
+        .btn-resend { background: none; border: none; color: #a855f7; font-weight: 600; font-size: 14px; cursor: pointer; padding: 10px 20px; border-radius: 10px; transition: all 0.3s ease; }
+        .btn-resend:hover { background: rgba(168,85,247,0.1); }
+        .btn-resend:disabled { color: #9ca3af; cursor: not-allowed; }
+
+        .timer { color: #9ca3af; font-size: 13px; margin-top: 10px; }
+
+        .message { padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .error-message { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .success-message { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+        .logout-link { display: inline-flex; align-items: center; gap: 6px; color: #6b7280; font-size: 13px; margin-top: 20px; text-decoration: none; transition: color 0.3s ease; }
+        .logout-link:hover { color: #ef4444; }
+
+        .loading-spinner { width: 20px; height: 20px; border: 2px solid transparent; border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 480px) {
+            .verify-container { padding: 35px 25px; }
+            .otp-input { width: 45px; height: 52px; font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="top-nav-container">
+            <a href="/" class="logo">
+                <div class="logo-icon"><i class="ri-bubble-chart-fill"></i></div>
+                <span class="logo-text">ThoughtStream</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="verify-container">
+            <div class="verify-icon"><i class="ri-mail-check-line"></i></div>
+
+            <h1>Verify your email</h1>
+            <p class="subtitle">We've sent a 6-digit code to</p>
+            <p class="email-display"><%= email %></p>
+
+            <% if (error) { %>
+                <div class="message error-message"><i class="ri-error-warning-line"></i> <%= error %></div>
+            <% } %>
+            <% if (success) { %>
+                <div class="message success-message"><i class="ri-checkbox-circle-line"></i> <%= success %></div>
+            <% } %>
+
+            <form method="POST" action="/verify-email" class="otp-form" id="otpForm">
+                <div class="otp-inputs">
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required autofocus>
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                </div>
+                <input type="hidden" name="otp" id="otpHidden">
+                <button type="submit" class="btn-verify" id="verifyBtn">
+                    <i class="ri-shield-check-line"></i>
+                    <span>Verify Email</span>
+                </button>
+            </form>
+
+            <div class="resend-section">
+                <p class="resend-text">Didn't receive the code?</p>
+                <button type="button" class="btn-resend" id="resendBtn" onclick="resendOTP()">
+                    <i class="ri-refresh-line"></i> Resend Code
+                </button>
+                <p class="timer" id="timer"></p>
+            </div>
+
+            <a href="/logout" class="logout-link"><i class="ri-logout-box-line"></i> Use different email</a>
+        </div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('.otp-input');
+        const otpHidden = document.getElementById('otpHidden');
+        const form = document.getElementById('otpForm');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const resendBtn = document.getElementById('resendBtn');
+        const timerEl = document.getElementById('timer');
+
+        let resendCooldown = 0;
+
+        // Auto-focus and move between inputs
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+                updateHiddenOTP();
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                pastedData.split('').forEach((char, i) => {
+                    if (inputs[i]) inputs[i].value = char;
+                });
+                updateHiddenOTP();
+                if (pastedData.length === 6) inputs[5].focus();
+            });
+
+            // Only allow numbers
+            input.addEventListener('keypress', (e) => {
+                if (!/[0-9]/.test(e.key)) e.preventDefault();
+            });
+        });
+
+        function updateHiddenOTP() {
+            otpHidden.value = Array.from(inputs).map(i => i.value).join('');
+        }
+
+        form.addEventListener('submit', (e) => {
+            updateHiddenOTP();
+            if (otpHidden.value.length !== 6) {
+                e.preventDefault();
+                inputs.forEach(i => i.classList.add('error'));
+                setTimeout(() => inputs.forEach(i => i.classList.remove('error')), 500);
+                return;
+            }
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<div class="loading-spinner"></div><span>Verifying...</span>';
+        });
+
+        async function resendOTP() {
+            if (resendCooldown > 0) return;
+            
+            resendBtn.disabled = true;
+            resendBtn.innerHTML = '<div class="loading-spinner" style="border-top-color:#a855f7;width:16px;height:16px;"></div> Sending...';
+
+            try {
+                const res = await fetch('/resend-otp', { method: 'POST' });
+                const data = await res.json();
+                
+                if (data.success) {
+                    resendBtn.innerHTML = '<i class="ri-check-line"></i> Code Sent!';
+                    resendBtn.style.color = '#22c55e';
+                    startCooldown(60);
+                } else {
+                    resendBtn.innerHTML = '<i class="ri-error-warning-line"></i> Failed';
+                    resendBtn.style.color = '#ef4444';
+                    setTimeout(() => {
+                        resendBtn.innerHTML = '<i class="ri-refresh-line"></i> Resend Code';
+                        resendBtn.style.color = '';
+                        resendBtn.disabled = false;
+                    }, 2000);
+                }
+            } catch (err) {
+                resendBtn.innerHTML = '<i class="ri-error-warning-line"></i> Error';
+                resendBtn.disabled = false;
+            }
+        }
+
+        function startCooldown(seconds) {
+            resendCooldown = seconds;
+            updateTimer();
+            const interval = setInterval(() => {
+                resendCooldown--;
+                updateTimer();
+                if (resendCooldown <= 0) {
+                    clearInterval(interval);
+                    resendBtn.disabled = false;
+                    resendBtn.innerHTML = '<i class="ri-refresh-line"></i> Resend Code';
+                    resendBtn.style.color = '';
+                    timerEl.textContent = '';
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            if (resendCooldown > 0) {
+                timerEl.textContent = `Resend available in ${resendCooldown}s`;
+            }
+        }
+
+        // Start initial cooldown
+        startCooldown(60);
+    </script>
+</body>
+</html>
