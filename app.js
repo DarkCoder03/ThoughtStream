@@ -717,5 +717,192 @@ app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
 
 
 
+/// ==========================================
+// ADMIN PANEL
+// ==========================================
+app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        const thoughts = (await db.query(`
+            SELECT t.*, u.profile_pic 
+            FROM thoughts t 
+            LEFT JOIN users u ON t.user_email = u.email 
+            ORDER BY t.created_at DESC
+        `)).rows.map(t => ({ 
+            id: t.id, 
+            userName: t.user_name, 
+            userEmail: t.user_email, 
+            message: t.message, 
+            image: t.image_url, 
+            timestamp: t.created_at, 
+            profilePic: t.profile_pic 
+        }));
+        
+        const replies = (await db.query(`
+            SELECT r.*, u.profile_pic, t.message as thought_message 
+            FROM replies r 
+            LEFT JOIN users u ON r.user_email = u.email 
+            LEFT JOIN thoughts t ON r.thought_id = t.id 
+            ORDER BY r.created_at DESC
+        `)).rows.map(r => ({ 
+            id: r.id, 
+            thoughtId: r.thought_id, 
+            userName: r.user_name, 
+            userEmail: r.user_email, 
+            text: r.reply_text, 
+            timestamp: r.created_at, 
+            thoughtMessage: r.thought_message, 
+            profilePic: r.profile_pic 
+        }));
+        
+        const users = (await db.query(`
+            SELECT id, name, email, is_admin, is_verified, created_at, profile_pic 
+            FROM users 
+            ORDER BY created_at DESC
+        `)).rows;
+        
+        // Get banned users
+        let bannedUsers = [];
+        try {
+            bannedUsers = (await db.query(`SELECT * FROM banned_users ORDER BY banned_at DESC`)).rows;
+        } catch (e) {
+            console.log('Banned users table may not exist yet');
+        }
+        
+        res.render('admin', { thoughts, replies, users, bannedUsers, adminName: req.session.userName });
+    } catch (err) { 
+        console.error('Admin error:', err);
+        res.redirect('/dashboard'); 
+    }
+});
 
+// ==========================================
+// ADMIN: BAN USER (Ban + Delete)
+// ==========================================
+app.post('/admin/ban-user', isAuthenticated, isAdmin, async (req, res) => {
+    const userId = parseInt(req.body.userId);
+    
+    if (userId === req.session.userId) {
+        return res.redirect('/admin');
+    }
+    
+    try {
+        const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+        
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+            
+            // Don't ban admins
+            if (user.is_admin) {
+                return res.redirect('/admin');
+            }
+            
+            // 1. Add to banned_users table
+            await db.query(`
+                INSERT INTO banned_users (email, name, reason, banned_by) 
+                VALUES ($1, $2, $3, $4) 
+                ON CONFLICT (email) DO UPDATE SET 
+                banned_at = NOW(), 
+                reason = $3,
+                banned_by = $4
+            `, [user.email, user.name, 'Banned by admin', req.session.userEmail]);
+            
+            // 2. Delete all user content
+            await db.query('DELETE FROM replies WHERE user_email = $1', [user.email]);
+            await db.query('DELETE FROM replies WHERE thought_id IN (SELECT id FROM thoughts WHERE user_email = $1)', [user.email]);
+            await db.query('DELETE FROM thoughts WHERE user_email = $1', [user.email]);
+            
+            // 3. Delete user
+            await db.query('DELETE FROM users WHERE id = $1', [userId]);
+            
+            console.log('🚫 User banned:', user.email);
+        }
+    } catch (err) {
+        console.error('Ban user error:', err);
+    }
+    
+    res.redirect('/admin');
+});
 
+// ==========================================
+// ADMIN: DELETE USER (Delete only, no ban)
+// ==========================================
+app.post('/admin/delete-user', isAuthenticated, isAdmin, async (req, res) => {
+    const userId = parseInt(req.body.userId);
+    
+    if (userId === req.session.userId) {
+        return res.redirect('/admin');
+    }
+    
+    try {
+        const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+        
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+            
+            if (user.is_admin) {
+                return res.redirect('/admin');
+            }
+            
+            // Delete content but DON'T ban
+            await db.query('DELETE FROM replies WHERE user_email = $1', [user.email]);
+            await db.query('DELETE FROM replies WHERE thought_id IN (SELECT id FROM thoughts WHERE user_email = $1)', [user.email]);
+            await db.query('DELETE FROM thoughts WHERE user_email = $1', [user.email]);
+            await db.query('DELETE FROM users WHERE id = $1', [userId]);
+            
+            console.log('🗑️ User deleted (not banned):', user.email);
+        }
+    } catch (err) {
+        console.error('Delete user error:', err);
+    }
+    
+    res.redirect('/admin');
+});
+
+// ==========================================
+// ADMIN: UNBAN USER
+// ==========================================
+app.post('/admin/unban-user', isAuthenticated, isAdmin, async (req, res) => {
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+    
+    try {
+        await db.query('DELETE FROM banned_users WHERE LOWER(email) = $1', [email]);
+        console.log('✅ User unbanned:', email);
+    } catch (err) {
+        console.error('Unban error:', err);
+    }
+    
+    res.redirect('/admin');
+});
+
+// ==========================================
+// ADMIN: DELETE THOUGHT
+// ==========================================
+app.post('/admin/delete-thought', isAuthenticated, isAdmin, async (req, res) => {
+    const thoughtId = parseInt(req.body.thoughtId);
+    
+    try {
+        await db.query('DELETE FROM replies WHERE thought_id = $1', [thoughtId]);
+        await db.query('DELETE FROM thoughts WHERE id = $1', [thoughtId]);
+        console.log('🗑️ Thought deleted:', thoughtId);
+    } catch (err) {
+        console.error('Delete thought error:', err);
+    }
+    
+    res.redirect('/admin');
+});
+
+// ==========================================
+// ADMIN: DELETE REPLY
+// ==========================================
+app.post('/admin/delete-reply', isAuthenticated, isAdmin, async (req, res) => {
+    const replyId = parseInt(req.body.replyId);
+    
+    try {
+        await db.query('DELETE FROM replies WHERE id = $1', [replyId]);
+        console.log('🗑️ Reply deleted:', replyId);
+    } catch (err) {
+        console.error('Delete reply error:', err);
+    }
+    
+    res.redirect('/admin');
+});

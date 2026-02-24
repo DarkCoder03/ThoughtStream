@@ -24,25 +24,62 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 25px 20px; }
 
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 25px; }
+        /* Stats */
+        .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 25px; }
         .stat-card { background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #e5e7eb; text-align: center; transition: all 0.3s ease; }
         .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 24px; }
         .stat-icon.purple { background: rgba(168,85,247,0.1); color: #a855f7; }
+        .stat-icon.green { background: rgba(34,197,94,0.1); color: #22c55e; }
         .stat-icon.pink { background: rgba(236,72,153,0.1); color: #ec4899; }
         .stat-icon.blue { background: rgba(59,130,246,0.1); color: #3b82f6; }
-        .stat-icon.green { background: rgba(34,197,94,0.1); color: #22c55e; }
+        .stat-icon.red { background: rgba(239,68,68,0.1); color: #ef4444; }
         .stat-number { font-size: 28px; font-weight: 700; color: #1a1a2e; }
         .stat-label { color: #9ca3af; font-size: 13px; margin-top: 4px; }
 
+        /* Tabs */
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab { padding: 10px 20px; background: #fff; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
         .tab.active { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border-color: transparent; }
         .tab:hover:not(.active) { border-color: #a855f7; }
+        .tab.banned-tab.active { background: linear-gradient(135deg, #ef4444, #dc2626); }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
+        /* Table */
+        .table-container { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+        th { background: #f9fafb; font-weight: 600; color: #374151; position: sticky; top: 0; }
+        tr:hover { background: #fafafa; }
+        tr:last-child td { border-bottom: none; }
+
+        /* Badges */
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+        .badge-admin { background: #fef3c7; color: #d97706; }
+        .badge-user { background: #e0e7ff; color: #4f46e5; }
+        .badge-verified { background: #dcfce7; color: #16a34a; }
+        .badge-unverified { background: #fef2f2; color: #ef4444; }
+        .badge-banned { background: #fef2f2; color: #ef4444; }
+
+        /* User Cell */
+        .user-cell { display: flex; align-items: center; gap: 10px; }
+        .user-cell .avatar { width: 36px; height: 36px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px; overflow: hidden; flex-shrink: 0; }
+        .user-cell .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Action Buttons */
+        .action-buttons { display: flex; gap: 8px; }
+        .btn-action { padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 4px; border: 1px solid; }
+        .btn-delete { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
+        .btn-delete:hover { background: #fee2e2; }
+        .btn-ban { background: #fef3c7; color: #d97706; border-color: #fde68a; }
+        .btn-ban:hover { background: #fde68a; }
+        .btn-unban { background: #dcfce7; color: #16a34a; border-color: #bbf7d0; }
+        .btn-unban:hover { background: #bbf7d0; }
+
+        /* Cards for Thoughts/Replies */
         .card { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 12px; border: 1px solid #e5e7eb; transition: all 0.3s ease; }
         .card:hover { box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 12px; flex-wrap: wrap; }
@@ -56,36 +93,18 @@
         .card-time { font-size: 12px; color: #9ca3af; display: flex; align-items: center; gap: 4px; }
         .thought-image { max-width: 200px; max-height: 150px; border-radius: 10px; margin-bottom: 12px; object-fit: cover; }
 
-        .btn-danger { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
-        .btn-danger:hover { background: #fee2e2; border-color: #ef4444; }
-
-        .table-container { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; }
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
-        th { background: #f9fafb; font-weight: 600; color: #374151; position: sticky; top: 0; }
-        tr:hover { background: #fafafa; }
-        tr:last-child td { border-bottom: none; }
-
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
-        .badge-admin { background: #fef3c7; color: #d97706; }
-        .badge-user { background: #e0e7ff; color: #4f46e5; }
-        .badge-verified { background: #dcfce7; color: #16a34a; }
-        .badge-unverified { background: #fef2f2; color: #ef4444; }
-
-        .user-cell { display: flex; align-items: center; gap: 10px; }
-        .user-cell .avatar { width: 36px; height: 36px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px; overflow: hidden; flex-shrink: 0; }
-        .user-cell .avatar img { width: 100%; height: 100%; object-fit: cover; }
-
+        /* Empty State */
         .empty-state { text-align: center; padding: 50px 20px; color: #9ca3af; }
         .empty-state i { font-size: 40px; margin-bottom: 12px; display: block; }
 
         @media (max-width: 768px) {
-            .top-nav-container { flex-direction: column; align-items: flex-start; }
-            .nav-actions { width: 100%; justify-content: space-between; }
             .stats { grid-template-columns: repeat(2, 1fr); }
             .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 5px; }
             .tab { white-space: nowrap; flex-shrink: 0; }
+            .action-buttons { flex-direction: column; gap: 4px; }
+        }
+        @media (max-width: 480px) {
+            .stats { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -104,7 +123,7 @@
     </nav>
 
     <div class="container">
-        <!-- Stats -->
+        <!-- Stats - Only Once! -->
         <div class="stats">
             <div class="stat-card">
                 <div class="stat-icon purple"><i class="ri-user-line"></i></div>
@@ -126,6 +145,11 @@
                 <div class="stat-number"><%= replies.length %></div>
                 <div class="stat-label">Replies</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="ri-forbid-line"></i></div>
+                <div class="stat-number"><%= typeof bannedUsers !== 'undefined' ? bannedUsers.length : 0 %></div>
+                <div class="stat-label">Banned</div>
+            </div>
         </div>
 
         <!-- Tabs -->
@@ -133,6 +157,7 @@
             <div class="tab active" onclick="showTab('users', this)"><i class="ri-user-line"></i> Users</div>
             <div class="tab" onclick="showTab('thoughts', this)"><i class="ri-chat-3-line"></i> Thoughts</div>
             <div class="tab" onclick="showTab('replies', this)"><i class="ri-reply-line"></i> Replies</div>
+            <div class="tab banned-tab" onclick="showTab('banned', this)"><i class="ri-forbid-line"></i> Banned</div>
         </div>
 
         <!-- Users Tab -->
@@ -148,7 +173,7 @@
                                 <th>Role</th>
                                 <th>Status</th>
                                 <th>Joined</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -185,12 +210,22 @@
                                     <td><%= formatToIST(user.created_at) %></td>
                                     <td>
                                         <% if (!user.is_admin) { %>
-                                            <form method="POST" action="/admin/delete-user" style="margin:0;">
-                                                <input type="hidden" name="userId" value="<%= user.id %>">
-                                                <button type="submit" class="btn-danger" onclick="return confirm('Delete this user and all their content?')">
-                                                    <i class="ri-delete-bin-line"></i>
-                                                </button>
-                                            </form>
+                                            <div class="action-buttons">
+                                                <!-- Ban Button -->
+                                                <form method="POST" action="/admin/ban-user" style="margin:0;">
+                                                    <input type="hidden" name="userId" value="<%= user.id %>">
+                                                    <button type="submit" class="btn-action btn-ban" onclick="return confirm('Ban this user? They will be logged out and cannot register again.')">
+                                                        <i class="ri-forbid-line"></i> Ban
+                                                    </button>
+                                                </form>
+                                                <!-- Delete Button -->
+                                                <form method="POST" action="/admin/delete-user" style="margin:0;">
+                                                    <input type="hidden" name="userId" value="<%= user.id %>">
+                                                    <button type="submit" class="btn-action btn-delete" onclick="return confirm('Delete this user? Their posts will be removed but they can register again.')">
+                                                        <i class="ri-delete-bin-line"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
                                         <% } else { %>
                                             <span style="color:#9ca3af;">—</span>
                                         <% } %>
@@ -222,10 +257,9 @@
                                     <div class="card-email"><%= thought.userEmail %></div>
                                 </div>
                             </div>
-                            <form method="POST" action="/api/delete-thought" style="margin:0;">
+                            <form method="POST" action="/admin/delete-thought" style="margin:0;">
                                 <input type="hidden" name="thoughtId" value="<%= thought.id %>">
-                                <input type="hidden" name="thoughtUserEmail" value="<%= thought.userEmail %>">
-                                <button type="submit" class="btn-danger" onclick="return confirm('Delete this thought?')">
+                                <button type="submit" class="btn-action btn-delete" onclick="return confirm('Delete this thought?')">
                                     <i class="ri-delete-bin-line"></i> Delete
                                 </button>
                             </form>
@@ -266,10 +300,9 @@
                                     <div class="card-email"><%= reply.userEmail %></div>
                                 </div>
                             </div>
-                            <form method="POST" action="/api/delete-reply" style="margin:0;">
+                            <form method="POST" action="/admin/delete-reply" style="margin:0;">
                                 <input type="hidden" name="replyId" value="<%= reply.id %>">
-                                <input type="hidden" name="replyUserEmail" value="<%= reply.userEmail %>">
-                                <button type="submit" class="btn-danger" onclick="return confirm('Delete this reply?')">
+                                <button type="submit" class="btn-action btn-delete" onclick="return confirm('Delete this reply?')">
                                     <i class="ri-delete-bin-line"></i> Delete
                                 </button>
                             </form>
@@ -290,12 +323,63 @@
                 </div>
             <% } %>
         </div>
+
+        <!-- Banned Users Tab -->
+        <div id="banned-tab" class="tab-content">
+            <div class="table-container">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Reason</th>
+                                <th>Banned At</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (typeof bannedUsers !== 'undefined' && bannedUsers.length > 0) { %>
+                                <% bannedUsers.forEach(function(user) { %>
+                                    <tr>
+                                        <td><strong>#<%= user.id %></strong></td>
+                                        <td><%= user.email %></td>
+                                        <td><%= user.name || 'N/A' %></td>
+                                        <td><%= user.reason || 'Banned by admin' %></td>
+                                        <td><%= formatToIST(user.banned_at) %></td>
+                                        <td>
+                                            <form method="POST" action="/admin/unban-user" style="margin:0;">
+                                                <input type="hidden" name="email" value="<%= user.email %>">
+                                                <button type="submit" class="btn-action btn-unban" onclick="return confirm('Unban this user?')">
+                                                    <i class="ri-user-follow-line"></i> Unban
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="empty-state">
+                                        <i class="ri-checkbox-circle-line"></i>
+                                        <p>No banned users</p>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         function showTab(name, el) {
+            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            // Show selected tab
             document.getElementById(name + '-tab').classList.add('active');
             el.classList.add('active');
         }
