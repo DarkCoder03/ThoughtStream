@@ -5,15 +5,15 @@ const multer = require('multer');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const db = require('./db');
-const supabase = require('./supabaseStorage');
-const { generateOTP, sendVerificationEmail, sendVerificationEmailAsync } = require('./emailService');
+const supabase = require('./supabaseAuth');
+const supabaseStorage = require('./supabaseStorage');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 
 // ==========================================
-// HELPER FUNCTION - Format Date to IST
+// HELPER - Format Date to IST
 // ==========================================
 function formatToIST(date) {
     if (!date) return '';
@@ -30,33 +30,26 @@ function formatToIST(date) {
     hours = hours % 12 || 12;
     return `${day}/${month}/${year}, ${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
 }
-
 app.locals.formatToIST = formatToIST;
 
 // ==========================================
-// SESSION SETUP
+// SESSION & MIDDLEWARE
 // ==========================================
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'thoughtstream-secret-key-2024',
+    secret: process.env.SESSION_SECRET || 'thoughtstream-secret-2024',
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// ==========================================
-// MULTER SETUP
-// ==========================================
 const storage = multer.memoryStorage();
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) cb(null, true);
-    else cb(new Error('Only image files are allowed!'), false);
+    else cb(new Error('Only images!'), false);
 };
 const uploadProfile = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 const uploadThought = multer({ storage, fileFilter, limits: { fileSize: 4 * 1024 * 1024 } });
 
-// ==========================================
-// MIDDLEWARE
-// ==========================================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
@@ -68,12 +61,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // AUTH MIDDLEWARE
 // ==========================================
 function isAuthenticated(req, res, next) {
-    if (req.session && req.session.userId) {
-        if (!req.session.isVerified) {
-            return res.redirect('/verify-email');
-        }
-        return next();
-    }
+    if (req.session && req.session.userId) return next();
     return res.redirect('/login');
 }
 
@@ -86,89 +74,19 @@ function isAdmin(req, res, next) {
 // ROUTES
 // ==========================================
 app.get('/', (req, res) => {
-    if (req.session && req.session.userId) {
-        if (!req.session.isVerified) return res.redirect('/verify-email');
-        return res.redirect('/dashboard');
-    }
+    if (req.session && req.session.userId) return res.redirect('/dashboard');
     res.redirect('/login');
 });
 
 // ==========================================
-// LOGIN
+// REGISTER - With Supabase Email Verification
 // ==========================================
 // ==========================================
-// LOGIN
-// ==========================================
-app.get('/login', (req, res) => {
-    if (req.session && req.session.userId) {
-        if (!req.session.isVerified) return res.redirect('/verify-email');
-        return res.redirect('/dashboard');
-    }
-    res.render('login', { error: null, success: null });
-});
-
-app.post('/login', async (req, res) => {
-    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
-    const password = req.body.password ? req.body.password.trim() : '';
-
-    try {
-        const result = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
-
-        if (result.rows.length > 0) {
-            const user = result.rows[0];
-            
-            let validPassword = false;
-            if (user.password.startsWith('$2b$')) {
-                validPassword = await bcrypt.compare(password, user.password);
-            } else {
-                validPassword = (password === user.password);
-                if (validPassword) {
-                    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-                    await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, user.id]);
-                }
-            }
-            
-            if (validPassword) {
-                req.session.userId = user.id;
-                req.session.userName = user.name;
-                req.session.userEmail = user.email;
-                req.session.profilePic = user.profile_pic;
-                req.session.isAdmin = user.is_admin || false;
-                req.session.isVerified = user.is_verified || false;
-                
-                // Check if email is verified
-                if (!user.is_verified) {
-                    // Generate new OTP
-                    const otp = generateOTP();
-                    const expires = new Date(Date.now() + 10 * 60 * 1000);
-                    await db.query('UPDATE users SET verification_code = $1, verification_expires = $2 WHERE id = $3', [otp, expires, user.id]);
-                    
-                    // Send email in background (non-blocking!)
-                    sendVerificationEmailAsync(user.email, user.name, otp);
-                    
-                    return res.redirect('/verify-email');
-                }
-                
-                return res.redirect('/dashboard');
-            }
-        }
-        
-        return res.render('login', { error: 'Invalid email or password.', success: null });
-    } catch (err) {
-        console.error('Login error:', err);
-        return res.render('login', { error: 'Something went wrong.', success: null });
-    }
-});
-
-// ==========================================
-// REGISTER
-// ==========================================
-// ==========================================
-// REGISTER
+// REGISTER - With Email Domain Restriction
 // ==========================================
 app.get('/register', (req, res) => {
     if (req.session && req.session.userId) return res.redirect('/dashboard');
-    res.render('register', { error: null });
+    res.render('register', { error: null, success: null });
 });
 
 app.post('/register', async (req, res) => {
@@ -177,172 +95,223 @@ app.post('/register', async (req, res) => {
     const password = req.body.password ? req.body.password.trim() : '';
     const confirmPassword = req.body.confirmPassword ? req.body.confirmPassword.trim() : '';
 
+    // Validation
     if (!name || !email || !password || !confirmPassword) {
-        return res.render('register', { error: 'All fields are required.' });
+        return res.render('register', { error: 'All fields are required.', success: null });
     }
 
+    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        return res.render('register', { error: 'Please enter a valid email address.' });
+        return res.render('register', { error: 'Please enter a valid email.', success: null });
+    }
+
+    // ✅ ALLOWED EMAIL DOMAINS - Add more if needed
+    const allowedDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'live.com'];
+    const emailDomain = email.split('@')[1];
+    
+    if (!allowedDomains.includes(emailDomain)) {
+        return res.render('register', { 
+            error: 'Only Gmail and Outlook email addresses are allowed.', 
+            success: null 
+        });
     }
 
     if (password.length < 6) {
-        return res.render('register', { error: 'Password must be at least 6 characters.' });
+        return res.render('register', { error: 'Password must be at least 6 characters.', success: null });
     }
 
     if (password !== confirmPassword) {
-        return res.render('register', { error: 'Passwords do not match.' });
+        return res.render('register', { error: 'Passwords do not match.', success: null });
     }
 
     try {
+        // Check if email exists in our database
         const checkResult = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
-
         if (checkResult.rows.length > 0) {
-            return res.render('register', { error: 'Email already registered. Please login.' });
+            return res.render('register', { error: 'Email already registered. Please login.', success: null });
         }
 
+        // Register with Supabase Auth
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: { name: name },
+                emailRedirectTo: `${process.env.SITE_URL}/verify-success`
+            }
+        });
+
+        if (error) {
+            console.error('Supabase signup error:', error);
+            return res.render('register', { error: error.message, success: null });
+        }
+
+        // Save to our users table
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-        const otp = generateOTP();
-        const expires = new Date(Date.now() + 10 * 60 * 1000);
+        await db.query(
+            'INSERT INTO users (name, email, password, is_verified) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING',
+            [name, email, hashedPassword, false]
+        );
 
-        const insertQuery = `
-            INSERT INTO users (name, email, password, is_verified, verification_code, verification_expires) 
-            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
-        `;
-        const result = await db.query(insertQuery, [name, email, hashedPassword, false, otp, expires]);
-        const user = result.rows[0];
+        console.log('✅ User registered:', email);
 
-        // Set session immediately
-        req.session.userId = user.id;
-        req.session.userName = user.name;
-        req.session.userEmail = user.email;
-        req.session.isVerified = false;
-
-        // Send email in background (non-blocking!)
-        sendVerificationEmailAsync(email, name, otp);
-
-        // Redirect immediately - don't wait for email
-        return res.redirect('/verify-email');
+        return res.render('register', { 
+            error: null, 
+            success: 'Registration successful! Please check your email to verify your account.' 
+        });
 
     } catch (err) {
         console.error('Register error:', err);
-        return res.render('register', { error: 'Something went wrong. Please try again.' });
+        return res.render('register', { error: 'Something went wrong. Please try again.', success: null });
     }
 });
 
 // ==========================================
-// EMAIL VERIFICATION PAGE
+// VERIFY SUCCESS PAGE (After clicking email link)
 // ==========================================
-app.get('/verify-email', (req, res) => {
-    if (!req.session.userId) return res.redirect('/login');
-    if (req.session.isVerified) return res.redirect('/dashboard');
+app.get('/verify-success', async (req, res) => {
+    // Supabase redirects here after email verification
+    // Update our database to mark user as verified
     
-    res.render('verify-email', { 
-        email: req.session.userEmail,
-        error: null,
-        success: null
-    });
+    const token_hash = req.query.token_hash;
+    const type = req.query.type;
+    
+    if (token_hash && type === 'email') {
+        try {
+            const { data, error } = await supabase.auth.verifyOtp({
+                token_hash,
+                type: 'email'
+            });
+            
+            if (data?.user?.email) {
+                // Mark user as verified in our database
+                await db.query('UPDATE users SET is_verified = true WHERE email = $1', [data.user.email]);
+                console.log('✅ User verified:', data.user.email);
+            }
+        } catch (err) {
+            console.error('Verify error:', err);
+        }
+    }
+    
+    res.render('verify-success');
 });
 
-app.post('/verify-email', async (req, res) => {
-    if (!req.session.userId) return res.redirect('/login');
+// ==========================================
+// LOGIN - Check if email is verified
+// ==========================================
+app.get('/login', (req, res) => {
+    if (req.session && req.session.userId) return res.redirect('/dashboard');
+    res.render('login', { error: null, success: req.query.verified ? 'Email verified! You can now login.' : null });
+});
 
-    const otp = req.body.otp ? req.body.otp.trim() : '';
-    const userId = req.session.userId;
+app.post('/login', async (req, res) => {
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+    const password = req.body.password ? req.body.password.trim() : '';
 
     try {
-        const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
-        
-        if (result.rows.length === 0) {
-            req.session.destroy();
-            return res.redirect('/login');
+        // First, verify with Supabase
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (authError) {
+            // Check if it's because email not confirmed
+            if (authError.message.includes('Email not confirmed')) {
+                return res.render('login', { 
+                    error: 'Please verify your email first. Check your inbox for the verification link.', 
+                    success: null 
+                });
+            }
+            return res.render('login', { error: 'Invalid email or password.', success: null });
         }
 
-        const user = result.rows[0];
+        // Check if email is confirmed in Supabase
+        if (!authData.user?.email_confirmed_at) {
+            return res.render('login', { 
+                error: 'Please verify your email first. Check your inbox.', 
+                success: null 
+            });
+        }
 
-        // Check if already verified
-        if (user.is_verified) {
-            req.session.isVerified = true;
+        // Get user from our database
+        const result = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
+        
+        if (result.rows.length === 0) {
+            // User exists in Supabase but not in our DB - create them
+            const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+            const insertResult = await db.query(
+                'INSERT INTO users (name, email, password, is_verified) VALUES ($1, $2, $3, true) RETURNING *',
+                [authData.user.user_metadata?.name || email.split('@')[0], email, hashedPassword]
+            );
+            const user = insertResult.rows[0];
+            
+            req.session.userId = user.id;
+            req.session.userName = user.name;
+            req.session.userEmail = user.email;
+            req.session.profilePic = user.profile_pic;
+            req.session.isAdmin = user.is_admin || false;
+            
             return res.redirect('/dashboard');
         }
 
-        // Check OTP
-        if (user.verification_code !== otp) {
-            return res.render('verify-email', { 
-                email: req.session.userEmail,
-                error: 'Invalid verification code. Please try again.',
-                success: null
-            });
+        const user = result.rows[0];
+
+        // Update verified status in our DB
+        if (!user.is_verified) {
+            await db.query('UPDATE users SET is_verified = true WHERE id = $1', [user.id]);
         }
 
-        // Check if OTP expired
-        if (new Date() > new Date(user.verification_expires)) {
-            return res.render('verify-email', { 
-                email: req.session.userEmail,
-                error: 'Verification code has expired. Please request a new one.',
-                success: null
-            });
-        }
-
-        // Verify user
-        await db.query('UPDATE users SET is_verified = true, verification_code = NULL, verification_expires = NULL WHERE id = $1', [userId]);
+        // Set session
+        req.session.userId = user.id;
+        req.session.userName = user.name;
+        req.session.userEmail = user.email;
+        req.session.profilePic = user.profile_pic;
+        req.session.isAdmin = user.is_admin || false;
         
-        req.session.isVerified = true;
         return res.redirect('/dashboard');
 
     } catch (err) {
-        console.error('Verification error:', err);
-        return res.render('verify-email', { 
-            email: req.session.userEmail,
-            error: 'Something went wrong. Please try again.',
-            success: null
-        });
+        console.error('Login error:', err);
+        return res.render('login', { error: 'Something went wrong.', success: null });
     }
 });
 
 // ==========================================
-// RESEND OTP
+// RESEND VERIFICATION EMAIL
 // ==========================================
-// ==========================================
-// RESEND OTP
-// ==========================================
-app.post('/resend-otp', async (req, res) => {
-    if (!req.session.userId) return res.json({ success: false, error: 'Not logged in' });
+app.post('/resend-verification', async (req, res) => {
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+    
+    if (!email) {
+        return res.json({ success: false, error: 'Email required' });
+    }
 
     try {
-        const result = await db.query('SELECT * FROM users WHERE id = $1', [req.session.userId]);
-        
-        if (result.rows.length === 0) {
-            return res.json({ success: false, error: 'User not found' });
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email: email,
+            options: {
+                emailRedirectTo: `${process.env.SITE_URL}/verify-success`
+            }
+        });
+
+        if (error) {
+            return res.json({ success: false, error: error.message });
         }
 
-        const user = result.rows[0];
-
-        if (user.is_verified) {
-            return res.json({ success: false, error: 'Already verified' });
-        }
-
-        const otp = generateOTP();
-        const expires = new Date(Date.now() + 10 * 60 * 1000);
-
-        await db.query('UPDATE users SET verification_code = $1, verification_expires = $2 WHERE id = $3', [otp, expires, user.id]);
-        
-        // Send email in background
-        sendVerificationEmailAsync(user.email, user.name, otp);
-        
-        // Return success immediately
-        return res.json({ success: true, message: 'New code sent!' });
-
+        return res.json({ success: true, message: 'Verification email sent!' });
     } catch (err) {
-        console.error('Resend OTP error:', err);
-        return res.json({ success: false, error: 'Something went wrong' });
+        return res.json({ success: false, error: 'Failed to send email' });
     }
 });
 
 // ==========================================
 // LOGOUT
 // ==========================================
-app.get('/logout', (req, res) => {
+app.get('/logout', async (req, res) => {
+    await supabase.auth.signOut();
     req.session.destroy((err) => {
         if (err) console.error('Logout error:', err);
         res.redirect('/login');
@@ -359,7 +328,6 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
 
     try {
         const userResult = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
-        
         if (userResult.rows.length === 0) {
             req.session.destroy();
             return res.redirect('/login');
@@ -377,7 +345,6 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
         `);
 
         const thoughts = [];
-        
         for (const thought of thoughtsResult.rows) {
             const repliesResult = await db.query(`
                 SELECT r.*, u.profile_pic 
@@ -420,7 +387,7 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// SETTINGS PAGE
+// SETTINGS
 // ==========================================
 app.get('/settings', isAuthenticated, async (req, res) => {
     try {
@@ -433,14 +400,10 @@ app.get('/settings', isAuthenticated, async (req, res) => {
             success: null, error: null, passwordSuccess: null, passwordError: null
         });
     } catch (err) {
-        console.error('Settings error:', err);
         res.redirect('/dashboard');
     }
 });
 
-// ==========================================
-// SETTINGS UPDATE
-// ==========================================
 app.post('/settings/update', isAuthenticated, uploadProfile.single('profilePic'), async (req, res) => {
     const userId = req.session.userId;
     const userEmail = req.session.userEmail;
@@ -458,9 +421,9 @@ app.post('/settings/update', isAuthenticated, uploadProfile.single('profilePic')
         let profilePic = null;
         if (req.file) {
             const fileName = `profile-${userId}-${Date.now()}-${req.file.originalname}`;
-            const { error } = await supabase.storage.from('profile-pics').upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+            const { error } = await supabaseStorage.storage.from('profile-pics').upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
             if (!error) {
-                const { data: urlData } = supabase.storage.from('profile-pics').getPublicUrl(fileName);
+                const { data: urlData } = supabaseStorage.storage.from('profile-pics').getPublicUrl(fileName);
                 profilePic = urlData.publicUrl;
                 await db.query('UPDATE users SET profile_pic = $1 WHERE id = $2', [profilePic, userId]);
                 req.session.profilePic = profilePic;
@@ -472,14 +435,10 @@ app.post('/settings/update', isAuthenticated, uploadProfile.single('profilePic')
 
         res.render('settings', { userId, name: newName, email: userEmail, profilePic, success: 'Profile updated!', error: null, passwordSuccess: null, passwordError: null });
     } catch (err) {
-        console.error('Update error:', err);
         res.render('settings', { userId, name: currentName, email: userEmail, profilePic: null, success: null, error: 'Update failed.', passwordSuccess: null, passwordError: null });
     }
 });
 
-// ==========================================
-// CHANGE PASSWORD
-// ==========================================
 app.post('/settings/change-password', isAuthenticated, async (req, res) => {
     const userId = req.session.userId;
     const userEmail = req.session.userEmail;
@@ -490,32 +449,45 @@ app.post('/settings/change-password', isAuthenticated, async (req, res) => {
         if (result.rows.length === 0) { req.session.destroy(); return res.redirect('/login'); }
         const user = result.rows[0];
 
-        let validPassword = user.password.startsWith('$2b$') 
-            ? await bcrypt.compare(currentPassword, user.password) 
-            : currentPassword === user.password;
+        // Verify current password with Supabase
+        const { error: authError } = await supabase.auth.signInWithPassword({
+            email: userEmail,
+            password: currentPassword
+        });
 
-        if (!validPassword) {
+        if (authError) {
             return res.render('settings', { userId, name: user.name, email: userEmail, profilePic: user.profile_pic, success: null, error: null, passwordSuccess: null, passwordError: 'Current password is incorrect.' });
         }
+
         if (newPassword.length < 6) {
-            return res.render('settings', { userId, name: user.name, email: userEmail, profilePic: user.profile_pic, success: null, error: null, passwordSuccess: null, passwordError: 'New password must be at least 6 characters.' });
+            return res.render('settings', { userId, name: user.name, email: userEmail, profilePic: user.profile_pic, success: null, error: null, passwordSuccess: null, passwordError: 'Password must be at least 6 characters.' });
         }
+
         if (newPassword !== confirmNewPassword) {
             return res.render('settings', { userId, name: user.name, email: userEmail, profilePic: user.profile_pic, success: null, error: null, passwordSuccess: null, passwordError: 'Passwords do not match.' });
         }
 
+        // Update password in Supabase
+        const { error: updateError } = await supabase.auth.updateUser({
+            password: newPassword
+        });
+
+        if (updateError) {
+            return res.render('settings', { userId, name: user.name, email: userEmail, profilePic: user.profile_pic, success: null, error: null, passwordSuccess: null, passwordError: updateError.message });
+        }
+
+        // Also update in our DB
         const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
         await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
 
         res.render('settings', { userId, name: user.name, email: userEmail, profilePic: user.profile_pic, success: null, error: null, passwordSuccess: 'Password changed!', passwordError: null });
     } catch (err) {
-        console.error('Password change error:', err);
         res.redirect('/settings');
     }
 });
 
 // ==========================================
-// SINGLE THOUGHT PAGE (For Sharing)
+// SINGLE THOUGHT PAGE
 // ==========================================
 app.get('/thought/:id', async (req, res) => {
     try {
@@ -530,7 +502,7 @@ app.get('/thought/:id', async (req, res) => {
 });
 
 // ==========================================
-// ADMIN PANEL
+// ADMIN
 // ==========================================
 app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
     try {
@@ -612,9 +584,9 @@ app.post('/api/add-thought', isAuthenticated, uploadThought.single('image'), asy
         let imageUrl = null;
         if (req.file) {
             const fileName = `thought-${req.session.userId}-${Date.now()}-${req.file.originalname}`;
-            const { error } = await supabase.storage.from('thought-images').upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
+            const { error } = await supabaseStorage.storage.from('thought-images').upload(fileName, req.file.buffer, { contentType: req.file.mimetype, upsert: true });
             if (error) return res.json({ success: false, error: 'Upload failed' });
-            const { data: urlData } = supabase.storage.from('thought-images').getPublicUrl(fileName);
+            const { data: urlData } = supabaseStorage.storage.from('thought-images').getPublicUrl(fileName);
             imageUrl = urlData.publicUrl;
         }
         const result = await db.query('INSERT INTO thoughts (user_id, user_name, user_email, message, image_url, liked_by) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', [req.session.userId, req.session.userName, req.session.userEmail, thought, imageUrl, []]);
@@ -624,10 +596,10 @@ app.post('/api/add-thought', isAuthenticated, uploadThought.single('image'), asy
 });
 
 app.get('/api/auth-status', (req, res) => {
-    res.json({ isLoggedIn: !!(req.session && req.session.userId && req.session.isVerified), userId: req.session?.userId || null });
+    res.json({ isLoggedIn: !!(req.session && req.session.userId), userId: req.session?.userId || null });
 });
 
 // ==========================================
 // START SERVER
 // ==========================================
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

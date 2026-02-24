@@ -5,36 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - ThoughtStream</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; background: #f8f9fa; }
-        .top-nav { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 20px; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; background: linear-gradient(180deg, #f8f9fa 0%, #f3e8ff 50%, #fce7f3 100%); }
+        .top-nav { background: rgba(255,255,255,0.98); border-bottom: 1px solid rgba(229,231,235,0.6); padding: 14px 20px; }
         .top-nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: center; }
         .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .logo-icon i { font-size: 20px; color: white; }
-        .logo-text { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon i { font-size: 22px; color: white; }
+        .logo-text { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .main-content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
-        .register-container { background: #fff; padding: 35px 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; width: 100%; max-width: 400px; }
-        .register-container h1 { text-align: center; color: #1a1a2e; margin-bottom: 8px; font-size: 26px; font-weight: 700; }
-        .register-subtitle { text-align: center; color: #6b7280; margin-bottom: 25px; font-size: 14px; }
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #374151; font-weight: 500; font-size: 13px; }
-        .form-group label i { font-size: 14px; color: #a855f7; }
-        .form-group input { width: 100%; padding: 12px 14px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; background: #f9fafb; color: #1a1a2e; font-family: inherit; transition: all 0.3s; }
+        .register-container { background: white; padding: 40px 35px; border-radius: 24px; box-shadow: 0 20px 60px rgba(168,85,247,0.1); border: 1px solid rgba(229,231,235,0.5); width: 100%; max-width: 420px; }
+        .register-container h1 { text-align: center; color: #1a1a2e; margin-bottom: 8px; font-size: 28px; font-weight: 700; }
+        .register-subtitle { text-align: center; color: #6b7280; margin-bottom: 30px; font-size: 15px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #374151; font-weight: 500; font-size: 14px; }
+        .form-group label i { font-size: 16px; color: #a855f7; }
+        .form-group input { width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; background: #f9fafb; color: #1a1a2e; font-family: inherit; transition: all 0.3s; }
         .form-group input::placeholder { color: #9ca3af; }
-        .form-group input:focus { outline: none; border-color: #a855f7; background: #fff; }
-        .input-hint { font-size: 11px; color: #9ca3af; margin-top: 4px; }
-        .btn-register { width: 100%; padding: 14px; background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px; }
-        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.35); }
-        .divider { display: flex; align-items: center; margin: 22px 0; }
+        .form-group input:focus { outline: none; border-color: #a855f7; background: white; box-shadow: 0 0 0 4px rgba(168,85,247,0.1); }
+        .input-hint { font-size: 12px; color: #9ca3af; margin-top: 6px; }
+        .btn-register { width: 100%; padding: 16px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168,85,247,0.3); }
+        .divider { display: flex; align-items: center; margin: 25px 0; }
         .divider-line { flex: 1; height: 1px; background: #e5e7eb; }
         .divider-text { padding: 0 15px; color: #9ca3af; font-size: 13px; }
         .btn-login { width: 100%; padding: 14px; background: #f3f4f6; color: #374151; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-login:hover { background: #fff; border-color: #a855f7; color: #a855f7; }
-        .error-message { background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 10px; margin-bottom: 18px; text-align: center; font-weight: 500; font-size: 13px; border: 1px solid #fecaca; }
+        .btn-login:hover { background: white; border-color: #a855f7; color: #a855f7; }
+        .message { padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .error-message { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .success-message { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+        .success-message i { font-size: 20px; }
     </style>
 </head>
 <body>
@@ -50,43 +53,97 @@
     <div class="main-content">
         <div class="register-container">
             <h1>Create Account</h1>
-            <p class="register-subtitle">Join our community</p>
+            <p class="register-subtitle">Join ThoughtStream today</p>
 
-            <% if (typeof error !== 'undefined' && error) { %><div class="error-message"><%= error %></div><% } %>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="message error-message">
+                    <i class="ri-error-warning-line"></i>
+                    <%= error %>
+                </div>
+            <% } %>
 
-            <form method="POST" action="/register" id="registerForm">
-                <div class="form-group">
-                    <label><i class="ri-user-line"></i> Full Name</label>
-                    <input type="text" name="name" placeholder="Enter your name" required minlength="2">
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="message success-message">
+                    <i class="ri-mail-check-line"></i>
+                    <%= success %>
                 </div>
-                <div class="form-group">
-                    <label><i class="ri-mail-line"></i> Email</label>
-                    <input type="email" name="email" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="ri-lock-line"></i> Password</label>
-                    <input type="password" name="password" id="password" placeholder="Create password" required minlength="6">
-                    <p class="input-hint">At least 6 characters</p>
-                </div>
-                <div class="form-group">
-                    <label><i class="ri-lock-password-line"></i> Confirm Password</label>
-                    <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm password" required>
-                </div>
-                <button type="submit" class="btn-register"><i class="ri-rocket-line"></i> Create Account</button>
-            </form>
+            <% } else { %>
+                <form method="POST" action="/register" id="registerForm">
+                    <div class="form-group">
+                        <label><i class="ri-user-line"></i> Full Name</label>
+                        <input type="text" name="name" placeholder="Enter your name" required minlength="2">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="ri-mail-line"></i> Email</label>
+                        <input type="email" name="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="ri-lock-line"></i> Password</label>
+                        <input type="password" name="password" id="password" placeholder="Create password" required minlength="6">
+                        <p class="input-hint">At least 6 characters</p>
+                    </div>
+                    <div class="form-group">
+    <label><i class="ri-mail-line"></i> Email</label>
+    <input type="email" name="email" placeholder="Enter your email" required>
+    <p class="input-hint">Only Gmail and Outlook emails are allowed</p>
+</div>
+                    <button type="submit" class="btn-register"><i class="ri-rocket-line"></i> Create Account</button>
+                </form>
+            <% } %>
 
-            <div class="divider"><div class="divider-line"></div><span class="divider-text">Already have account?</span><div class="divider-line"></div></div>
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">Already have account?</span>
+                <div class="divider-line"></div>
+            </div>
             <a href="/login" class="btn-login"><i class="ri-login-box-line"></i> Sign In</a>
         </div>
     </div>
 
     <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        document.getElementById('registerForm')?.addEventListener('submit', function(e) {
             if (document.getElementById('password').value !== document.getElementById('confirmPassword').value) {
                 e.preventDefault();
                 alert('Passwords do not match!');
             }
         });
     </script>
+    <script>
+    const allowedDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'live.com'];
+    
+    document.getElementById('registerForm')?.addEventListener('submit', function(e) {
+        const email = document.querySelector('input[name="email"]').value.toLowerCase();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        // Check email domain
+        const emailDomain = email.split('@')[1];
+        if (!allowedDomains.includes(emailDomain)) {
+            e.preventDefault();
+            alert('Only Gmail and Outlook email addresses are allowed!');
+            return;
+        }
+        
+        // Check passwords match
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return;
+        }
+    });
+
+    // Show hint when typing email
+    document.querySelector('input[name="email"]')?.addEventListener('blur', function() {
+        const email = this.value.toLowerCase();
+        if (email.includes('@')) {
+            const emailDomain = email.split('@')[1];
+            if (!allowedDomains.includes(emailDomain)) {
+                this.style.borderColor = '#ef4444';
+            } else {
+                this.style.borderColor = '#22c55e';
+            }
+        }
+    });
+</script>
 </body>
 </html>
