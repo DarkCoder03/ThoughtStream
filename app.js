@@ -6,7 +6,7 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const db = require('./db');
 const supabase = require('./supabaseStorage');
-const { generateOTP, sendVerificationEmail } = require('./emailService');
+const { generateOTP, sendVerificationEmail, sendVerificationEmailAsync } = require('./emailService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -96,6 +96,9 @@ app.get('/', (req, res) => {
 // ==========================================
 // LOGIN
 // ==========================================
+// ==========================================
+// LOGIN
+// ==========================================
 app.get('/login', (req, res) => {
     if (req.session && req.session.userId) {
         if (!req.session.isVerified) return res.redirect('/verify-email');
@@ -135,11 +138,14 @@ app.post('/login', async (req, res) => {
                 
                 // Check if email is verified
                 if (!user.is_verified) {
-                    // Generate new OTP and send
+                    // Generate new OTP
                     const otp = generateOTP();
-                    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+                    const expires = new Date(Date.now() + 10 * 60 * 1000);
                     await db.query('UPDATE users SET verification_code = $1, verification_expires = $2 WHERE id = $3', [otp, expires, user.id]);
-                    await sendVerificationEmail(user.email, user.name, otp);
+                    
+                    // Send email in background (non-blocking!)
+                    sendVerificationEmailAsync(user.email, user.name, otp);
+                    
                     return res.redirect('/verify-email');
                 }
                 
@@ -154,6 +160,9 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// ==========================================
+// REGISTER
+// ==========================================
 // ==========================================
 // REGISTER
 // ==========================================
@@ -172,7 +181,6 @@ app.post('/register', async (req, res) => {
         return res.render('register', { error: 'All fields are required.' });
     }
 
-    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return res.render('register', { error: 'Please enter a valid email address.' });
@@ -195,7 +203,7 @@ app.post('/register', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
         const otp = generateOTP();
-        const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const expires = new Date(Date.now() + 10 * 60 * 1000);
 
         const insertQuery = `
             INSERT INTO users (name, email, password, is_verified, verification_code, verification_expires) 
@@ -204,19 +212,16 @@ app.post('/register', async (req, res) => {
         const result = await db.query(insertQuery, [name, email, hashedPassword, false, otp, expires]);
         const user = result.rows[0];
 
-        // Send verification email
-        const emailResult = await sendVerificationEmail(email, name, otp);
-        
-        if (!emailResult.success) {
-            console.error('Failed to send verification email:', emailResult.error);
-        }
-
-        // Set session
+        // Set session immediately
         req.session.userId = user.id;
         req.session.userName = user.name;
         req.session.userEmail = user.email;
         req.session.isVerified = false;
 
+        // Send email in background (non-blocking!)
+        sendVerificationEmailAsync(email, name, otp);
+
+        // Redirect immediately - don't wait for email
         return res.redirect('/verify-email');
 
     } catch (err) {
@@ -298,6 +303,9 @@ app.post('/verify-email', async (req, res) => {
 // ==========================================
 // RESEND OTP
 // ==========================================
+// ==========================================
+// RESEND OTP
+// ==========================================
 app.post('/resend-otp', async (req, res) => {
     if (!req.session.userId) return res.json({ success: false, error: 'Not logged in' });
 
@@ -319,13 +327,11 @@ app.post('/resend-otp', async (req, res) => {
 
         await db.query('UPDATE users SET verification_code = $1, verification_expires = $2 WHERE id = $3', [otp, expires, user.id]);
         
-        const emailResult = await sendVerificationEmail(user.email, user.name, otp);
+        // Send email in background
+        sendVerificationEmailAsync(user.email, user.name, otp);
         
-        if (emailResult.success) {
-            return res.json({ success: true, message: 'New code sent!' });
-        } else {
-            return res.json({ success: false, error: 'Failed to send email' });
-        }
+        // Return success immediately
+        return res.json({ success: true, message: 'New code sent!' });
 
     } catch (err) {
         console.error('Resend OTP error:', err);
