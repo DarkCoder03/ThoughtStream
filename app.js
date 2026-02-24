@@ -33,23 +33,29 @@ function formatToIST(date) {
 app.locals.formatToIST = formatToIST;
 
 // ==========================================
-// SESSION & MIDDLEWARE
+// SESSION SETUP
 // ==========================================
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'thoughtstream-secret-2024',
+    secret: process.env.SESSION_SECRET || 'thoughtstream-secret-key-2024',
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
 
+// ==========================================
+// MULTER SETUP
+// ==========================================
 const storage = multer.memoryStorage();
 const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) cb(null, true);
-    else cb(new Error('Only images!'), false);
+    else cb(new Error('Only images allowed!'), false);
 };
 const uploadProfile = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 const uploadThought = multer({ storage, fileFilter, limits: { fileSize: 4 * 1024 * 1024 } });
 
+// ==========================================
+// MIDDLEWARE
+// ==========================================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
@@ -79,11 +85,13 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// REGISTER - With Supabase Email Verification
+// REGISTER
 // ==========================================
-// ==========================================
-// REGISTER - With Supabase Email Verification
-// ==========================================
+app.get('/register', (req, res) => {
+    if (req.session && req.session.userId) return res.redirect('/dashboard');
+    res.render('register', { error: null, success: null });
+});
+
 app.post('/register', async (req, res) => {
     const name = req.body.name ? req.body.name.trim() : '';
     const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
@@ -100,7 +108,7 @@ app.post('/register', async (req, res) => {
         return res.render('register', { error: 'Please enter a valid email.', success: null });
     }
 
-    // Allowed email domains
+    // Allowed domains
     const allowedDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'live.com'];
     const emailDomain = email.split('@')[1];
     if (!allowedDomains.includes(emailDomain)) {
@@ -116,13 +124,22 @@ app.post('/register', async (req, res) => {
     }
 
     try {
-        // Check if email exists
+        // 🚫 CHECK IF USER IS BANNED
+        const bannedCheck = await db.query('SELECT * FROM banned_users WHERE LOWER(email) = $1', [email]);
+        if (bannedCheck.rows.length > 0) {
+            console.log('🚫 Banned user tried to register:', email);
+            return res.render('register', { 
+                error: 'This email has been permanently banned from ThoughtStream.', 
+                success: null 
+            });
+        }
+
+        // Check if email already exists
         const checkResult = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
         if (checkResult.rows.length > 0) {
             return res.render('register', { error: 'Email already registered. Please login.', success: null });
         }
 
-        // IMPORTANT: Use the correct Render URL
         const siteUrl = process.env.SITE_URL || 'https://thoughtstream-xgn8.onrender.com';
 
         // Register with Supabase Auth
@@ -160,111 +177,16 @@ app.post('/register', async (req, res) => {
     }
 });
 
-
-
-
-
-// ==========================================
-// REGISTER - With Email Domain Restriction
-// ==========================================
-app.get('/register', (req, res) => {
-    if (req.session && req.session.userId) return res.redirect('/dashboard');
-    res.render('register', { error: null, success: null });
-});
-
-app.post('/register', async (req, res) => {
-    const name = req.body.name ? req.body.name.trim() : '';
-    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
-    const password = req.body.password ? req.body.password.trim() : '';
-    const confirmPassword = req.body.confirmPassword ? req.body.confirmPassword.trim() : '';
-
-    // Validation
-    if (!name || !email || !password || !confirmPassword) {
-        return res.render('register', { error: 'All fields are required.', success: null });
-    }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.render('register', { error: 'Please enter a valid email.', success: null });
-    }
-
-    // ✅ ALLOWED EMAIL DOMAINS - Add more if needed
-    const allowedDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'live.com'];
-    const emailDomain = email.split('@')[1];
-    
-    if (!allowedDomains.includes(emailDomain)) {
-        return res.render('register', { 
-            error: 'Only Gmail and Outlook email addresses are allowed.', 
-            success: null 
-        });
-    }
-
-    if (password.length < 6) {
-        return res.render('register', { error: 'Password must be at least 6 characters.', success: null });
-    }
-
-    if (password !== confirmPassword) {
-        return res.render('register', { error: 'Passwords do not match.', success: null });
-    }
-
-    try {
-        // Check if email exists in our database
-        const checkResult = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
-        if (checkResult.rows.length > 0) {
-            return res.render('register', { error: 'Email already registered. Please login.', success: null });
-        }
-
-        // Register with Supabase Auth
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: { name: name },
-                emailRedirectTo: `${process.env.SITE_URL}/verify-success`
-            }
-        });
-
-        if (error) {
-            console.error('Supabase signup error:', error);
-            return res.render('register', { error: error.message, success: null });
-        }
-
-        // Save to our users table
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-        await db.query(
-            'INSERT INTO users (name, email, password, is_verified) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING',
-            [name, email, hashedPassword, false]
-        );
-
-        console.log('✅ User registered:', email);
-
-        return res.render('register', { 
-            error: null, 
-            success: 'Registration successful! Please check your email to verify your account.' 
-        });
-
-    } catch (err) {
-        console.error('Register error:', err);
-        return res.render('register', { error: 'Something went wrong. Please try again.', success: null });
-    }
-});
-
-// ==========================================
-// VERIFY SUCCESS PAGE (After clicking email link)
-// ==========================================
 // ==========================================
 // VERIFY SUCCESS PAGE
 // ==========================================
 app.get('/verify-success', async (req, res) => {
-    // Handle different Supabase redirect formats
     const token_hash = req.query.token_hash;
     const type = req.query.type;
     const access_token = req.query.access_token;
     const error = req.query.error;
     const error_description = req.query.error_description;
 
-    // If there's an error from Supabase
     if (error) {
         console.error('Verification error:', error, error_description);
         return res.render('verify-error', { 
@@ -272,7 +194,6 @@ app.get('/verify-success', async (req, res) => {
         });
     }
 
-    // Try to verify with token_hash
     if (token_hash && type) {
         try {
             const { data, error: verifyError } = await supabase.auth.verifyOtp({
@@ -280,11 +201,8 @@ app.get('/verify-success', async (req, res) => {
                 type: type
             });
             
-            if (verifyError) {
-                console.error('OTP verify error:', verifyError);
-            } else if (data?.user?.email) {
-                // Mark user as verified in our database
-                await db.query('UPDATE users SET is_verified = true WHERE email = $1', [data.user.email]);
+            if (!verifyError && data?.user?.email) {
+                await db.query('UPDATE users SET is_verified = true WHERE LOWER(email) = $1', [data.user.email.toLowerCase()]);
                 console.log('✅ User verified:', data.user.email);
             }
         } catch (err) {
@@ -292,12 +210,11 @@ app.get('/verify-success', async (req, res) => {
         }
     }
 
-    // If we have access_token, user is already verified
     if (access_token) {
         try {
             const { data: { user } } = await supabase.auth.getUser(access_token);
             if (user?.email) {
-                await db.query('UPDATE users SET is_verified = true WHERE email = $1', [user.email]);
+                await db.query('UPDATE users SET is_verified = true WHERE LOWER(email) = $1', [user.email.toLowerCase()]);
                 console.log('✅ User verified via access_token:', user.email);
             }
         } catch (err) {
@@ -309,7 +226,7 @@ app.get('/verify-success', async (req, res) => {
 });
 
 // ==========================================
-// LOGIN - Check if email is verified
+// LOGIN
 // ==========================================
 app.get('/login', (req, res) => {
     if (req.session && req.session.userId) return res.redirect('/dashboard');
@@ -321,24 +238,32 @@ app.post('/login', async (req, res) => {
     const password = req.body.password ? req.body.password.trim() : '';
 
     try {
-        // First, verify with Supabase
+        // 🚫 CHECK IF USER IS BANNED FIRST
+        const bannedCheck = await db.query('SELECT * FROM banned_users WHERE LOWER(email) = $1', [email]);
+        if (bannedCheck.rows.length > 0) {
+            console.log('🚫 Banned user tried to login:', email);
+            return res.render('login', { 
+                error: 'This account has been permanently banned from ThoughtStream.', 
+                success: null 
+            });
+        }
+
+        // Verify with Supabase
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email: email,
             password: password
         });
 
         if (authError) {
-            // Check if it's because email not confirmed
             if (authError.message.includes('Email not confirmed')) {
                 return res.render('login', { 
-                    error: 'Please verify your email first. Check your inbox for the verification link.', 
+                    error: 'Please verify your email first. Check your inbox.', 
                     success: null 
                 });
             }
             return res.render('login', { error: 'Invalid email or password.', success: null });
         }
 
-        // Check if email is confirmed in Supabase
         if (!authData.user?.email_confirmed_at) {
             return res.render('login', { 
                 error: 'Please verify your email first. Check your inbox.', 
@@ -350,7 +275,6 @@ app.post('/login', async (req, res) => {
         const result = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
         
         if (result.rows.length === 0) {
-            // User exists in Supabase but not in our DB - create them
             const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
             const insertResult = await db.query(
                 'INSERT INTO users (name, email, password, is_verified) VALUES ($1, $2, $3, true) RETURNING *',
@@ -369,12 +293,10 @@ app.post('/login', async (req, res) => {
 
         const user = result.rows[0];
 
-        // Update verified status in our DB
         if (!user.is_verified) {
             await db.query('UPDATE users SET is_verified = true WHERE id = $1', [user.id]);
         }
 
-        // Set session
         req.session.userId = user.id;
         req.session.userName = user.name;
         req.session.userEmail = user.email;
@@ -404,7 +326,7 @@ app.post('/resend-verification', async (req, res) => {
             type: 'signup',
             email: email,
             options: {
-                emailRedirectTo: `${process.env.SITE_URL}/verify-success`
+                emailRedirectTo: `${process.env.SITE_URL || 'https://thoughtstream-xgn8.onrender.com'}/verify-success`
             }
         });
 
@@ -422,7 +344,11 @@ app.post('/resend-verification', async (req, res) => {
 // LOGOUT
 // ==========================================
 app.get('/logout', async (req, res) => {
-    await supabase.auth.signOut();
+    try {
+        await supabase.auth.signOut();
+    } catch (e) {
+        console.log('Supabase signout:', e.message);
+    }
     req.session.destroy((err) => {
         if (err) console.error('Logout error:', err);
         res.redirect('/login');
@@ -560,7 +486,6 @@ app.post('/settings/change-password', isAuthenticated, async (req, res) => {
         if (result.rows.length === 0) { req.session.destroy(); return res.redirect('/login'); }
         const user = result.rows[0];
 
-        // Verify current password with Supabase
         const { error: authError } = await supabase.auth.signInWithPassword({
             email: userEmail,
             password: currentPassword
@@ -578,7 +503,6 @@ app.post('/settings/change-password', isAuthenticated, async (req, res) => {
             return res.render('settings', { userId, name: user.name, email: userEmail, profilePic: user.profile_pic, success: null, error: null, passwordSuccess: null, passwordError: 'Passwords do not match.' });
         }
 
-        // Update password in Supabase
         const { error: updateError } = await supabase.auth.updateUser({
             password: newPassword
         });
@@ -587,7 +511,6 @@ app.post('/settings/change-password', isAuthenticated, async (req, res) => {
             return res.render('settings', { userId, name: user.name, email: userEmail, profilePic: user.profile_pic, success: null, error: null, passwordSuccess: null, passwordError: updateError.message });
         }
 
-        // Also update in our DB
         const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
         await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
 
@@ -613,30 +536,187 @@ app.get('/thought/:id', async (req, res) => {
 });
 
 // ==========================================
-// ADMIN
+// ADMIN PANEL
 // ==========================================
 app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
     try {
-        const thoughts = (await db.query(`SELECT t.*, u.profile_pic FROM thoughts t LEFT JOIN users u ON t.user_email = u.email ORDER BY t.created_at DESC`)).rows.map(t => ({ id: t.id, userName: t.user_name, userEmail: t.user_email, message: t.message, image: t.image_url, timestamp: t.created_at, profilePic: t.profile_pic }));
-        const replies = (await db.query(`SELECT r.*, u.profile_pic, t.message as thought_message FROM replies r LEFT JOIN users u ON r.user_email = u.email LEFT JOIN thoughts t ON r.thought_id = t.id ORDER BY r.created_at DESC`)).rows.map(r => ({ id: r.id, thoughtId: r.thought_id, userName: r.user_name, userEmail: r.user_email, text: r.reply_text, timestamp: r.created_at, thoughtMessage: r.thought_message, profilePic: r.profile_pic }));
-        const users = (await db.query(`SELECT id, name, email, is_admin, is_verified, created_at, profile_pic FROM users ORDER BY created_at DESC`)).rows;
-        res.render('admin', { thoughts, replies, users, adminName: req.session.userName });
-    } catch (err) { res.redirect('/dashboard'); }
+        const thoughts = (await db.query(`
+            SELECT t.*, u.profile_pic 
+            FROM thoughts t 
+            LEFT JOIN users u ON t.user_email = u.email 
+            ORDER BY t.created_at DESC
+        `)).rows.map(t => ({ 
+            id: t.id, 
+            userName: t.user_name, 
+            userEmail: t.user_email, 
+            message: t.message, 
+            image: t.image_url, 
+            timestamp: t.created_at, 
+            profilePic: t.profile_pic 
+        }));
+        
+        const replies = (await db.query(`
+            SELECT r.*, u.profile_pic, t.message as thought_message 
+            FROM replies r 
+            LEFT JOIN users u ON r.user_email = u.email 
+            LEFT JOIN thoughts t ON r.thought_id = t.id 
+            ORDER BY r.created_at DESC
+        `)).rows.map(r => ({ 
+            id: r.id, 
+            thoughtId: r.thought_id, 
+            userName: r.user_name, 
+            userEmail: r.user_email, 
+            text: r.reply_text, 
+            timestamp: r.created_at, 
+            thoughtMessage: r.thought_message, 
+            profilePic: r.profile_pic 
+        }));
+        
+        const users = (await db.query(`
+            SELECT id, name, email, is_admin, is_verified, created_at, profile_pic 
+            FROM users 
+            ORDER BY created_at DESC
+        `)).rows;
+        
+        // Get banned users
+        let bannedUsers = [];
+        try {
+            const bannedResult = await db.query('SELECT * FROM banned_users ORDER BY banned_at DESC');
+            bannedUsers = bannedResult.rows;
+            console.log('📋 Banned users count:', bannedUsers.length);
+        } catch (e) {
+            console.log('Banned users table may not exist:', e.message);
+        }
+        
+        res.render('admin', { thoughts, replies, users, bannedUsers, adminName: req.session.userName });
+    } catch (err) { 
+        console.error('Admin error:', err);
+        res.redirect('/dashboard'); 
+    }
 });
 
+// ==========================================
+// ADMIN: BAN USER
+// ==========================================
+app.post('/admin/ban-user', isAuthenticated, isAdmin, async (req, res) => {
+    const userId = parseInt(req.body.userId);
+    
+    if (userId === req.session.userId) {
+        return res.redirect('/admin');
+    }
+    
+    try {
+        const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+        
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+            
+            if (user.is_admin) {
+                return res.redirect('/admin');
+            }
+            
+            console.log('🚫 Banning user:', user.email);
+            
+            // 1. Add to banned_users table
+            await db.query(`
+                INSERT INTO banned_users (email, name, reason, banned_by) 
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (email) DO UPDATE SET banned_at = NOW()
+            `, [user.email.toLowerCase(), user.name, 'Banned by admin', req.session.userEmail]);
+            
+            // 2. Delete all user content
+            await db.query('DELETE FROM replies WHERE user_email = $1', [user.email]);
+            await db.query('DELETE FROM replies WHERE thought_id IN (SELECT id FROM thoughts WHERE user_email = $1)', [user.email]);
+            await db.query('DELETE FROM thoughts WHERE user_email = $1', [user.email]);
+            
+            // 3. Delete user
+            await db.query('DELETE FROM users WHERE id = $1', [userId]);
+            
+            console.log('✅ User banned and deleted:', user.email);
+        }
+    } catch (err) {
+        console.error('❌ Ban user error:', err);
+    }
+    
+    res.redirect('/admin');
+});
+
+// ==========================================
+// ADMIN: DELETE USER (without ban)
+// ==========================================
 app.post('/admin/delete-user', isAuthenticated, isAdmin, async (req, res) => {
     const userId = parseInt(req.body.userId);
-    if (userId === req.session.userId) return res.redirect('/admin');
+    
+    if (userId === req.session.userId) {
+        return res.redirect('/admin');
+    }
+    
     try {
-        const result = await db.query('SELECT email FROM users WHERE id = $1', [userId]);
+        const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+        
         if (result.rows.length > 0) {
-            const email = result.rows[0].email;
-            await db.query('DELETE FROM replies WHERE user_email = $1', [email]);
-            await db.query('DELETE FROM replies WHERE thought_id IN (SELECT id FROM thoughts WHERE user_email = $1)', [email]);
-            await db.query('DELETE FROM thoughts WHERE user_email = $1', [email]);
+            const user = result.rows[0];
+            
+            if (user.is_admin) {
+                return res.redirect('/admin');
+            }
+            
+            await db.query('DELETE FROM replies WHERE user_email = $1', [user.email]);
+            await db.query('DELETE FROM replies WHERE thought_id IN (SELECT id FROM thoughts WHERE user_email = $1)', [user.email]);
+            await db.query('DELETE FROM thoughts WHERE user_email = $1', [user.email]);
             await db.query('DELETE FROM users WHERE id = $1', [userId]);
+            
+            console.log('🗑️ User deleted (not banned):', user.email);
         }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error('Delete user error:', err);
+    }
+    
+    res.redirect('/admin');
+});
+
+// ==========================================
+// ADMIN: UNBAN USER
+// ==========================================
+app.post('/admin/unban-user', isAuthenticated, isAdmin, async (req, res) => {
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+    
+    try {
+        await db.query('DELETE FROM banned_users WHERE LOWER(email) = $1', [email]);
+        console.log('✅ User unbanned:', email);
+    } catch (err) {
+        console.error('Unban error:', err);
+    }
+    
+    res.redirect('/admin');
+});
+
+// ==========================================
+// ADMIN: DELETE THOUGHT
+// ==========================================
+app.post('/admin/delete-thought', isAuthenticated, isAdmin, async (req, res) => {
+    const thoughtId = parseInt(req.body.thoughtId);
+    try {
+        await db.query('DELETE FROM replies WHERE thought_id = $1', [thoughtId]);
+        await db.query('DELETE FROM thoughts WHERE id = $1', [thoughtId]);
+        console.log('🗑️ Thought deleted:', thoughtId);
+    } catch (err) {
+        console.error('Delete thought error:', err);
+    }
+    res.redirect('/admin');
+});
+
+// ==========================================
+// ADMIN: DELETE REPLY
+// ==========================================
+app.post('/admin/delete-reply', isAuthenticated, isAdmin, async (req, res) => {
+    const replyId = parseInt(req.body.replyId);
+    try {
+        await db.query('DELETE FROM replies WHERE id = $1', [replyId]);
+        console.log('🗑️ Reply deleted:', replyId);
+    } catch (err) {
+        console.error('Delete reply error:', err);
+    }
     res.redirect('/admin');
 });
 
@@ -713,196 +793,7 @@ app.get('/api/auth-status', (req, res) => {
 // ==========================================
 // START SERVER
 // ==========================================
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
-
-
-
-/// ==========================================
-// ADMIN PANEL
-// ==========================================
-app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
-    try {
-        const thoughts = (await db.query(`
-            SELECT t.*, u.profile_pic 
-            FROM thoughts t 
-            LEFT JOIN users u ON t.user_email = u.email 
-            ORDER BY t.created_at DESC
-        `)).rows.map(t => ({ 
-            id: t.id, 
-            userName: t.user_name, 
-            userEmail: t.user_email, 
-            message: t.message, 
-            image: t.image_url, 
-            timestamp: t.created_at, 
-            profilePic: t.profile_pic 
-        }));
-        
-        const replies = (await db.query(`
-            SELECT r.*, u.profile_pic, t.message as thought_message 
-            FROM replies r 
-            LEFT JOIN users u ON r.user_email = u.email 
-            LEFT JOIN thoughts t ON r.thought_id = t.id 
-            ORDER BY r.created_at DESC
-        `)).rows.map(r => ({ 
-            id: r.id, 
-            thoughtId: r.thought_id, 
-            userName: r.user_name, 
-            userEmail: r.user_email, 
-            text: r.reply_text, 
-            timestamp: r.created_at, 
-            thoughtMessage: r.thought_message, 
-            profilePic: r.profile_pic 
-        }));
-        
-        const users = (await db.query(`
-            SELECT id, name, email, is_admin, is_verified, created_at, profile_pic 
-            FROM users 
-            ORDER BY created_at DESC
-        `)).rows;
-        
-        // Get banned users
-        let bannedUsers = [];
-        try {
-            bannedUsers = (await db.query(`SELECT * FROM banned_users ORDER BY banned_at DESC`)).rows;
-        } catch (e) {
-            console.log('Banned users table may not exist yet');
-        }
-        
-        res.render('admin', { thoughts, replies, users, bannedUsers, adminName: req.session.userName });
-    } catch (err) { 
-        console.error('Admin error:', err);
-        res.redirect('/dashboard'); 
-    }
-});
-
-// ==========================================
-// ADMIN: BAN USER (Ban + Delete)
-// ==========================================
-app.post('/admin/ban-user', isAuthenticated, isAdmin, async (req, res) => {
-    const userId = parseInt(req.body.userId);
-    
-    if (userId === req.session.userId) {
-        return res.redirect('/admin');
-    }
-    
-    try {
-        const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
-        
-        if (result.rows.length > 0) {
-            const user = result.rows[0];
-            
-            // Don't ban admins
-            if (user.is_admin) {
-                return res.redirect('/admin');
-            }
-            
-            // 1. Add to banned_users table
-            await db.query(`
-                INSERT INTO banned_users (email, name, reason, banned_by) 
-                VALUES ($1, $2, $3, $4) 
-                ON CONFLICT (email) DO UPDATE SET 
-                banned_at = NOW(), 
-                reason = $3,
-                banned_by = $4
-            `, [user.email, user.name, 'Banned by admin', req.session.userEmail]);
-            
-            // 2. Delete all user content
-            await db.query('DELETE FROM replies WHERE user_email = $1', [user.email]);
-            await db.query('DELETE FROM replies WHERE thought_id IN (SELECT id FROM thoughts WHERE user_email = $1)', [user.email]);
-            await db.query('DELETE FROM thoughts WHERE user_email = $1', [user.email]);
-            
-            // 3. Delete user
-            await db.query('DELETE FROM users WHERE id = $1', [userId]);
-            
-            console.log('🚫 User banned:', user.email);
-        }
-    } catch (err) {
-        console.error('Ban user error:', err);
-    }
-    
-    res.redirect('/admin');
-});
-
-// ==========================================
-// ADMIN: DELETE USER (Delete only, no ban)
-// ==========================================
-app.post('/admin/delete-user', isAuthenticated, isAdmin, async (req, res) => {
-    const userId = parseInt(req.body.userId);
-    
-    if (userId === req.session.userId) {
-        return res.redirect('/admin');
-    }
-    
-    try {
-        const result = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
-        
-        if (result.rows.length > 0) {
-            const user = result.rows[0];
-            
-            if (user.is_admin) {
-                return res.redirect('/admin');
-            }
-            
-            // Delete content but DON'T ban
-            await db.query('DELETE FROM replies WHERE user_email = $1', [user.email]);
-            await db.query('DELETE FROM replies WHERE thought_id IN (SELECT id FROM thoughts WHERE user_email = $1)', [user.email]);
-            await db.query('DELETE FROM thoughts WHERE user_email = $1', [user.email]);
-            await db.query('DELETE FROM users WHERE id = $1', [userId]);
-            
-            console.log('🗑️ User deleted (not banned):', user.email);
-        }
-    } catch (err) {
-        console.error('Delete user error:', err);
-    }
-    
-    res.redirect('/admin');
-});
-
-// ==========================================
-// ADMIN: UNBAN USER
-// ==========================================
-app.post('/admin/unban-user', isAuthenticated, isAdmin, async (req, res) => {
-    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
-    
-    try {
-        await db.query('DELETE FROM banned_users WHERE LOWER(email) = $1', [email]);
-        console.log('✅ User unbanned:', email);
-    } catch (err) {
-        console.error('Unban error:', err);
-    }
-    
-    res.redirect('/admin');
-});
-
-// ==========================================
-// ADMIN: DELETE THOUGHT
-// ==========================================
-app.post('/admin/delete-thought', isAuthenticated, isAdmin, async (req, res) => {
-    const thoughtId = parseInt(req.body.thoughtId);
-    
-    try {
-        await db.query('DELETE FROM replies WHERE thought_id = $1', [thoughtId]);
-        await db.query('DELETE FROM thoughts WHERE id = $1', [thoughtId]);
-        console.log('🗑️ Thought deleted:', thoughtId);
-    } catch (err) {
-        console.error('Delete thought error:', err);
-    }
-    
-    res.redirect('/admin');
-});
-
-// ==========================================
-// ADMIN: DELETE REPLY
-// ==========================================
-app.post('/admin/delete-reply', isAuthenticated, isAdmin, async (req, res) => {
-    const replyId = parseInt(req.body.replyId);
-    
-    try {
-        await db.query('DELETE FROM replies WHERE id = $1', [replyId]);
-        console.log('🗑️ Reply deleted:', replyId);
-    } catch (err) {
-        console.error('Delete reply error:', err);
-    }
-    
-    res.redirect('/admin');
+app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`🌐 Site URL: ${process.env.SITE_URL || 'http://localhost:' + PORT}`);
 });
