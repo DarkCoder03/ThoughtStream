@@ -21,12 +21,12 @@
 
         /* ==================== ANIMATIONS ==================== */
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
+            from { opacity: 0; transform: translateY(-15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -36,57 +36,26 @@
         }
 
         @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.9); }
+            from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
 
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-
         @keyframes heartBurst {
-            0% { transform: scale(0); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.8); opacity: 0.8; }
+            100% { transform: scale(2.5); opacity: 0; }
         }
 
         @keyframes heartPop {
             0% { transform: scale(1); }
-            25% { transform: scale(1.3); }
-            50% { transform: scale(0.9); }
-            75% { transform: scale(1.1); }
+            30% { transform: scale(1.3); }
+            60% { transform: scale(0.9); }
             100% { transform: scale(1); }
         }
 
-        @keyframes ripple {
-            0% { transform: scale(0); opacity: 0.5; }
-            100% { transform: scale(4); opacity: 0; }
-        }
-
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.2); }
-            50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 30px rgba(236, 72, 153, 0.2); }
-        }
-
-        @keyframes typing {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
+        @keyframes slideOut {
+            from { opacity: 1; transform: translateX(0) scale(1); }
+            to { opacity: 0; transform: translateX(-20px) scale(0.9); }
         }
 
         @keyframes bounceIn {
@@ -96,23 +65,22 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
         }
 
         /* ==================== TOP NAV ==================== */
         .top-nav { 
-            background: rgba(255, 255, 255, 0.95); 
+            background: rgba(255, 255, 255, 0.98); 
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(229, 231, 235, 0.5); 
-            padding: 12px 20px; 
+            border-bottom: 1px solid rgba(229, 231, 235, 0.6); 
+            padding: 14px 20px; 
             position: sticky; 
             top: 0; 
             z-index: 100;
-            animation: fadeInDown 0.5s ease;
+            animation: fadeInDown 0.4s ease;
         }
 
         .top-nav-container { 
@@ -134,8 +102,8 @@
         .logo:hover { transform: scale(1.02); }
 
         .logo-icon { 
-            width: 40px; 
-            height: 40px; 
+            width: 42px; 
+            height: 42px; 
             background: linear-gradient(135deg, #a855f7, #ec4899); 
             border-radius: 12px; 
             display: flex; 
@@ -146,14 +114,12 @@
         }
 
         .logo:hover .logo-icon {
-            transform: rotate(10deg);
             box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
         }
 
         .logo-icon i { 
             font-size: 22px; 
             color: white;
-            animation: float 3s ease-in-out infinite;
         }
 
         .logo-text { 
@@ -171,8 +137,8 @@
         }
 
         .user-avatar { 
-            width: 38px; 
-            height: 38px; 
+            width: 40px; 
+            height: 40px; 
             background: linear-gradient(135deg, #a855f7, #ec4899); 
             border-radius: 50%; 
             display: flex; 
@@ -180,37 +146,34 @@
             justify-content: center; 
             color: white; 
             font-weight: 600; 
-            font-size: 15px; 
+            font-size: 16px; 
             overflow: hidden;
             transition: all 0.3s ease;
             cursor: pointer;
-            box-shadow: 0 2px 10px rgba(168, 85, 247, 0.2);
+            box-shadow: 0 3px 12px rgba(168, 85, 247, 0.25);
         }
 
         .user-avatar:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+            transform: scale(1.08);
+            box-shadow: 0 5px 18px rgba(168, 85, 247, 0.35);
         }
 
         .user-avatar img { 
             width: 100%; 
             height: 100%; 
             object-fit: cover;
-            transition: transform 0.3s ease;
         }
 
-        .user-avatar:hover img { transform: scale(1.1); }
-
         .nav-btn { 
-            width: 38px; 
-            height: 38px; 
+            width: 40px; 
+            height: 40px; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             font-size: 20px; 
             text-decoration: none; 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
         }
 
         .btn-settings { 
@@ -221,7 +184,7 @@
         .btn-settings:hover { 
             color: #a855f7; 
             background: #ede9fe;
-            transform: rotate(90deg) scale(1.1);
+            transform: rotate(90deg);
         }
 
         .btn-admin { 
@@ -231,8 +194,7 @@
 
         .btn-admin:hover { 
             background: #fee2e2;
-            transform: scale(1.1);
-            animation: pulse 0.5s ease;
+            transform: scale(1.08);
         }
 
         /* ==================== CONTAINER ==================== */
@@ -245,46 +207,42 @@
         /* ==================== WELCOME SECTION ==================== */
         .welcome-section { 
             text-align: center; 
-            padding: 50px 0 40px;
-            animation: fadeInUp 0.6s ease;
+            padding: 45px 0 40px;
+            animation: fadeIn 0.5s ease;
         }
 
         .welcome-text { 
-            font-size: 36px; 
+            font-size: 34px; 
             font-weight: 700; 
             color: #1a1a2e; 
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .welcome-text span { 
             background: linear-gradient(135deg, #a855f7, #ec4899); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent;
-            display: inline-block;
-            animation: float 3s ease-in-out infinite;
         }
 
         .welcome-subtext { 
             color: #9ca3af; 
-            font-size: 16px;
-            animation: fadeIn 0.8s ease 0.2s both;
+            font-size: 15px;
         }
 
         /* ==================== THOUGHT INPUT ==================== */
         .thought-input-box { 
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 50px; 
-            padding: 8px 12px 8px 28px; 
-            box-shadow: 0 8px 32px rgba(168, 85, 247, 0.1);
-            border: 2px solid rgba(168, 85, 247, 0.1);
-            transition: all 0.4s ease;
-            animation: fadeInUp 0.6s ease 0.1s both;
+            padding: 8px 12px 8px 26px; 
+            box-shadow: 0 6px 25px rgba(168, 85, 247, 0.08);
+            border: 2px solid rgba(168, 85, 247, 0.08);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease 0.1s both;
         }
 
         .thought-input-box:focus-within {
-            border-color: rgba(168, 85, 247, 0.3);
-            box-shadow: 0 12px 40px rgba(168, 85, 247, 0.15), 0 0 0 4px rgba(168, 85, 247, 0.05);
+            border-color: rgba(168, 85, 247, 0.25);
+            box-shadow: 0 10px 35px rgba(168, 85, 247, 0.12);
             transform: translateY(-2px);
         }
 
@@ -298,173 +256,124 @@
             flex: 1; 
             border: none; 
             background: transparent; 
-            padding: 16px 0; 
-            font-size: 16px; 
+            padding: 14px 0; 
+            font-size: 15px; 
             color: #1a1a2e; 
             outline: none; 
             font-family: inherit; 
         }
 
-        .thought-input::placeholder { 
-            color: #b4b4b4;
-            transition: color 0.3s ease;
-        }
-
-        .thought-input:focus::placeholder {
-            color: #d1d5db;
-        }
+        .thought-input::placeholder { color: #b4b4b4; }
 
         .btn-post { 
-            width: 50px; 
-            height: 50px; 
-            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            width: 48px; 
+            height: 48px; 
+            background: linear-gradient(135deg, #e5e7eb, #f3f4f6);
             color: #9ca3af; 
             border: none; 
             border-radius: 50%; 
-            font-size: 20px; 
+            font-size: 19px; 
             cursor: pointer; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
             display: flex; 
             align-items: center; 
             justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-post::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.4s ease, height 0.4s ease;
-        }
-
-        .btn-post:hover::before {
-            width: 100%;
-            height: 100%;
         }
 
         .btn-post:hover { 
             background: linear-gradient(135deg, #a855f7, #ec4899); 
             color: white;
-            transform: scale(1.1) rotate(15deg);
-            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
         }
 
-        .btn-post:active {
-            transform: scale(0.95);
+        .btn-post:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         /* ==================== FEED SECTION ==================== */
         .feed-section { 
-            margin-top: 45px;
-            animation: fadeInUp 0.6s ease 0.2s both;
+            margin-top: 40px;
+            animation: fadeInUp 0.5s ease 0.15s both;
         }
 
         .feed-header { 
             display: flex; 
             align-items: center; 
             gap: 14px; 
-            margin-bottom: 25px;
+            margin-bottom: 22px;
         }
 
         .feed-title { 
-            font-size: 18px; 
+            font-size: 17px; 
             font-weight: 600; 
             color: #374151; 
             display: flex; 
             align-items: center; 
-            gap: 10px;
+            gap: 8px;
         }
 
-        .feed-title i { 
-            color: #a855f7;
-            animation: pulse 2s ease-in-out infinite;
-        }
+        .feed-title i { color: #a855f7; }
 
         .feed-count { 
             background: linear-gradient(135deg, #a855f7, #ec4899); 
             color: white; 
-            padding: 6px 14px; 
-            border-radius: 25px; 
+            padding: 5px 14px; 
+            border-radius: 20px; 
             font-size: 13px; 
             font-weight: 600;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
-            animation: bounceIn 0.6s ease;
+            box-shadow: 0 3px 12px rgba(168, 85, 247, 0.25);
         }
 
         /* ==================== THOUGHT CARDS ==================== */
         .thoughts-feed { 
             display: flex; 
             flex-direction: column; 
-            gap: 20px; 
+            gap: 18px; 
         }
 
         .thought-card { 
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px; 
-            padding: 24px; 
-            border: 1px solid rgba(229, 231, 235, 0.5);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            animation: fadeInUp 0.5s ease both;
+            padding: 22px; 
+            border: 1px solid rgba(229, 231, 235, 0.6);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.4s ease both;
             position: relative;
-            overflow: hidden;
-        }
-
-        .thought-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.03), rgba(236, 72, 153, 0.03));
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            pointer-events: none;
-        }
-
-        .thought-card:hover::before {
-            opacity: 1;
         }
 
         .thought-card:hover { 
-            transform: translateY(-5px);
-            box-shadow: 
-                0 20px 50px rgba(168, 85, 247, 0.12),
-                0 0 0 1px rgba(168, 85, 247, 0.1),
-                inset 0 0 60px rgba(168, 85, 247, 0.02);
-            border-color: rgba(168, 85, 247, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(168, 85, 247, 0.1);
+            border-color: rgba(168, 85, 247, 0.15);
         }
 
-        .thought-card:nth-child(1) { animation-delay: 0.1s; }
-        .thought-card:nth-child(2) { animation-delay: 0.2s; }
-        .thought-card:nth-child(3) { animation-delay: 0.3s; }
-        .thought-card:nth-child(4) { animation-delay: 0.4s; }
-        .thought-card:nth-child(5) { animation-delay: 0.5s; }
+        .thought-card.removing {
+            animation: slideOut 0.4s ease forwards;
+        }
+
+        .thought-card:nth-child(1) { animation-delay: 0.05s; }
+        .thought-card:nth-child(2) { animation-delay: 0.1s; }
+        .thought-card:nth-child(3) { animation-delay: 0.15s; }
+        .thought-card:nth-child(4) { animation-delay: 0.2s; }
+        .thought-card:nth-child(5) { animation-delay: 0.25s; }
 
         .own-thought { 
-            border-left: 4px solid;
-            border-image: linear-gradient(135deg, #a855f7, #ec4899) 1;
+            border-left: 4px solid #a855f7;
         }
 
         /* Card Header */
         .card-header { 
             display: flex; 
             align-items: center; 
-            gap: 14px; 
-            margin-bottom: 16px;
+            gap: 12px; 
+            margin-bottom: 14px;
         }
 
         .card-avatar { 
-            width: 46px; 
-            height: 46px; 
+            width: 44px; 
+            height: 44px; 
             background: linear-gradient(135deg, #a855f7, #ec4899); 
             border-radius: 50%; 
             display: flex; 
@@ -473,14 +382,9 @@
             color: white; 
             font-weight: 600; 
             overflow: hidden; 
-            font-size: 18px;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .thought-card:hover .card-avatar {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.3);
+            font-size: 17px;
+            box-shadow: 0 3px 12px rgba(168, 85, 247, 0.2);
+            flex-shrink: 0;
         }
 
         .card-avatar img { 
@@ -494,36 +398,30 @@
         .card-user-name { 
             font-weight: 600; 
             color: #1a1a2e; 
-            font-size: 16px;
-            transition: color 0.3s ease;
-        }
-
-        .thought-card:hover .card-user-name {
-            color: #a855f7;
+            font-size: 15px;
         }
 
         .you-badge { 
             color: #a855f7; 
-            font-size: 12px; 
+            font-size: 11px; 
             margin-left: 6px;
-            font-weight: 500;
+            font-weight: 600;
             background: rgba(168, 85, 247, 0.1);
             padding: 2px 8px;
-            border-radius: 10px;
+            border-radius: 8px;
         }
 
         .card-timestamp { 
-            font-size: 13px; 
+            font-size: 12px; 
             color: #9ca3af; 
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         .card-message { 
-            font-size: 16px; 
-            line-height: 1.7; 
+            font-size: 15px; 
+            line-height: 1.65; 
             color: #374151; 
-            margin-bottom: 18px;
-            transition: color 0.3s ease;
+            margin-bottom: 16px;
         }
 
         /* ==================== CARD ACTIONS ==================== */
@@ -531,7 +429,7 @@
             display: flex; 
             align-items: center; 
             gap: 10px; 
-            padding-top: 16px; 
+            padding-top: 14px; 
             border-top: 1px solid rgba(243, 244, 246, 0.8);
         }
 
@@ -539,53 +437,44 @@
             display: flex; 
             align-items: center; 
             gap: 6px; 
-            background: rgba(249, 250, 251, 0.8);
-            border: 1px solid rgba(243, 244, 246, 0.8);
+            background: rgba(249, 250, 251, 0.9);
+            border: 1px solid rgba(229, 231, 235, 0.6);
             color: #9ca3af; 
-            font-size: 14px; 
+            font-size: 13px; 
             cursor: pointer; 
-            padding: 10px 16px; 
-            border-radius: 12px; 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 9px 14px; 
+            border-radius: 10px; 
+            transition: all 0.25s ease;
             font-family: inherit;
-            position: relative;
-            overflow: hidden;
         }
 
         .action-btn i { 
-            font-size: 18px;
-            transition: transform 0.3s ease;
+            font-size: 17px;
+            transition: transform 0.25s ease;
         }
 
         .action-btn:hover { 
             background: rgba(168, 85, 247, 0.08);
             color: #a855f7;
             border-color: rgba(168, 85, 247, 0.2);
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
-        .action-btn:hover i {
-            transform: scale(1.15);
+        .action-btn:hover i { transform: scale(1.1); }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
-        .action-btn:active {
-            transform: translateY(0) scale(0.95);
-        }
-
-        /* Like Button Special */
-        .like-btn {
-            position: relative;
-        }
-
+        /* Like Button */
         .like-btn.liked { 
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
             border-color: rgba(239, 68, 68, 0.2);
         }
 
-        .like-btn.liked i {
-            animation: heartPop 0.5s ease;
-        }
+        .like-btn.liked i { animation: heartPop 0.4s ease; }
 
         .like-btn:hover:not(.liked) {
             background: rgba(239, 68, 68, 0.08);
@@ -594,31 +483,23 @@
         }
 
         /* Heart Burst Effect */
-        .heart-burst {
+        .heart-burst-container {
             position: fixed;
             pointer-events: none;
             z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .heart-burst i {
-            font-size: 40px;
+        .heart-burst-container i {
+            font-size: 50px;
             color: #ef4444;
-            animation: heartBurst 0.8s ease forwards;
-        }
-
-        .heart-particles {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: #ef4444;
-            border-radius: 50%;
-            animation: heartBurst 0.6s ease forwards;
+            animation: heartBurst 0.7s ease-out forwards;
         }
 
         /* Delete Button */
-        .delete-btn { 
-            margin-left: auto;
-        }
+        .delete-btn { margin-left: auto; }
 
         .delete-btn:hover { 
             background: rgba(239, 68, 68, 0.08);
@@ -626,45 +507,44 @@
             border-color: rgba(239, 68, 68, 0.2);
         }
 
-        .delete-btn:hover i {
-            animation: shake 0.3s ease;
-        }
-
         /* ==================== REPLIES ==================== */
         .replies-container { 
             max-height: 0;
             overflow: hidden;
             opacity: 0;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s ease;
         }
 
         .replies-container.show { 
             max-height: 2000px;
             opacity: 1;
-            margin-top: 16px;
-            padding-top: 16px;
+            margin-top: 14px;
+            padding-top: 14px;
             border-top: 1px solid rgba(243, 244, 246, 0.8);
         }
 
         .reply-item { 
             display: flex; 
-            gap: 12px; 
-            padding: 14px; 
+            gap: 10px; 
+            padding: 12px; 
             background: rgba(249, 250, 251, 0.8);
-            border-radius: 14px; 
-            margin-bottom: 12px;
-            animation: fadeInUp 0.3s ease both;
-            transition: all 0.3s ease;
+            border-radius: 12px; 
+            margin-bottom: 10px;
+            animation: fadeIn 0.3s ease;
+            transition: all 0.25s ease;
         }
 
         .reply-item:hover {
-            background: rgba(243, 244, 246, 0.9);
-            transform: translateX(5px);
+            background: rgba(243, 244, 246, 0.95);
+        }
+
+        .reply-item.removing {
+            animation: slideOut 0.3s ease forwards;
         }
 
         .reply-avatar { 
-            width: 34px; 
-            height: 34px; 
+            width: 32px; 
+            height: 32px; 
             background: linear-gradient(135deg, #a855f7, #ec4899); 
             border-radius: 50%; 
             display: flex; 
@@ -686,145 +566,131 @@
 
         .reply-user-name { 
             font-weight: 600; 
-            font-size: 14px; 
+            font-size: 13px; 
             color: #1a1a2e;
         }
 
         .reply-text { 
-            font-size: 14px; 
+            font-size: 13px; 
             color: #6b7280; 
-            margin-top: 4px;
+            margin-top: 3px;
             line-height: 1.5;
         }
 
         .reply-time { 
-            font-size: 12px; 
+            font-size: 11px; 
             color: #b4b4b4; 
-            margin-top: 6px;
+            margin-top: 5px;
         }
 
         .reply-form { 
             display: flex; 
-            gap: 12px; 
-            margin-top: 14px;
-            animation: fadeIn 0.3s ease 0.2s both;
+            gap: 10px; 
+            margin-top: 12px;
         }
 
         .reply-input { 
             flex: 1; 
-            padding: 12px 18px; 
+            padding: 11px 16px; 
             border: 2px solid #e5e7eb;
-            border-radius: 25px; 
-            font-size: 14px; 
+            border-radius: 22px; 
+            font-size: 13px; 
             outline: none; 
             font-family: inherit;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
 
         .reply-input:focus { 
             border-color: #a855f7;
-            box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
         }
 
         .btn-reply-submit { 
-            padding: 12px 22px; 
+            padding: 11px 20px; 
             background: linear-gradient(135deg, #a855f7, #ec4899); 
             color: white; 
             border: none; 
-            border-radius: 25px; 
-            font-size: 14px; 
+            border-radius: 22px; 
+            font-size: 13px; 
             font-weight: 600; 
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+            transition: all 0.25s ease;
+            box-shadow: 0 3px 12px rgba(168, 85, 247, 0.25);
         }
 
         .btn-reply-submit:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
+        }
+
+        .btn-reply-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         /* ==================== EMPTY STATE ==================== */
         .empty-state { 
             text-align: center; 
-            padding: 80px 20px;
-            animation: fadeInUp 0.6s ease;
+            padding: 70px 20px;
+            animation: fadeIn 0.5s ease;
         }
 
         .empty-icon { 
-            width: 80px; 
-            height: 80px; 
+            width: 75px; 
+            height: 75px; 
             background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1));
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            margin: 0 auto 20px;
-            animation: float 3s ease-in-out infinite;
+            margin: 0 auto 18px;
         }
 
         .empty-icon i { 
-            font-size: 36px; 
+            font-size: 34px; 
             color: #a855f7;
         }
 
         .empty-title { 
-            font-size: 20px; 
+            font-size: 19px; 
             font-weight: 600; 
             color: #1a1a2e; 
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .empty-text { 
             color: #9ca3af; 
-            font-size: 15px;
+            font-size: 14px;
         }
 
-        /* ==================== FLOATING BG ==================== */
-        .bg-decoration {
-            position: fixed;
+        /* ==================== LOADING SPINNER ==================== */
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
             border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.3;
-            z-index: -1;
-            animation: float 10s ease-in-out infinite;
+            animation: spin 0.6s linear infinite;
         }
 
-        .bg-decoration-1 {
-            width: 400px;
-            height: 400px;
-            background: linear-gradient(135deg, #a855f7, #ec4899);
-            top: -150px;
-            right: -150px;
-        }
-
-        .bg-decoration-2 {
-            width: 300px;
-            height: 300px;
-            background: linear-gradient(135deg, #3b82f6, #a855f7);
-            bottom: -100px;
-            left: -100px;
-            animation-delay: 3s;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* ==================== RESPONSIVE ==================== */
         @media (max-width: 600px) {
-            .welcome-text { font-size: 28px; }
-            .thought-input-box { border-radius: 30px; padding: 6px 10px 6px 20px; }
-            .thought-card { padding: 20px; border-radius: 18px; }
+            .welcome-text { font-size: 26px; }
+            .thought-input-box { border-radius: 28px; padding: 6px 10px 6px 18px; }
+            .thought-card { padding: 18px; border-radius: 16px; }
             .card-actions { flex-wrap: wrap; gap: 8px; }
             .delete-btn { margin-left: 0; }
             .reply-form { flex-direction: column; }
             .btn-reply-submit { width: 100%; }
-            .action-btn { padding: 8px 12px; font-size: 13px; }
+            .action-btn { padding: 8px 12px; font-size: 12px; }
         }
     </style>
 </head>
 <body>
-    <!-- Background Decorations -->
-    <div class="bg-decoration bg-decoration-1"></div>
-    <div class="bg-decoration bg-decoration-2"></div>
-
     <!-- Top Navigation -->
     <nav class="top-nav">
         <div class="top-nav-container">
@@ -833,7 +699,7 @@
                 <span class="logo-text">ThoughtStream</span>
             </a>
             <div class="nav-actions">
-                <div class="user-avatar">
+                <div class="user-avatar" onclick="window.location.href='/settings'">
                     <% if (profilePic && profilePic.startsWith('http')) { %>
                         <img src="<%= profilePic %>" alt="">
                     <% } else if (profilePic) { %>
@@ -860,9 +726,9 @@
         <!-- Thought Input -->
         <section>
             <div class="thought-input-box">
-                <form class="thought-form" method="POST" action="/add-thought">
-                    <input type="text" name="thought" class="thought-input" placeholder="What's on your mind?" autocomplete="off" maxlength="280" required>
-                    <button type="submit" class="btn-post"><i class="ri-send-plane-fill"></i></button>
+                <form class="thought-form" id="thoughtForm">
+                    <input type="text" name="thought" id="thoughtInput" class="thought-input" placeholder="What's on your mind?" autocomplete="off" maxlength="280" required>
+                    <button type="submit" class="btn-post" id="postBtn"><i class="ri-send-plane-fill"></i></button>
                 </form>
             </div>
         </section>
@@ -871,13 +737,13 @@
         <section class="feed-section">
             <div class="feed-header">
                 <h2 class="feed-title"><i class="ri-global-line"></i> Global Feed</h2>
-                <span class="feed-count"><%= thoughts.length %> thoughts</span>
+                <span class="feed-count" id="thoughtCount"><%= thoughts.length %> thoughts</span>
             </div>
 
-            <% if (thoughts.length > 0) { %>
-                <div class="thoughts-feed">
-                    <% thoughts.forEach(function(thought, index) { %>
-                        <article class="thought-card <% if (thought.userEmail === email) { %>own-thought<% } %>" data-index="<%= index %>">
+            <div class="thoughts-feed" id="thoughtsFeed">
+                <% if (thoughts.length > 0) { %>
+                    <% thoughts.forEach(function(thought) { %>
+                        <article class="thought-card <% if (thought.userEmail === email) { %>own-thought<% } %>" data-thought-id="<%= thought.id %>" data-user-email="<%= thought.userEmail %>">
                             <div class="card-header">
                                 <div class="card-avatar">
                                     <% if (thought.profilePic && thought.profilePic.startsWith('http')) { %>
@@ -900,66 +766,54 @@
                             <p class="card-message"><%= thought.message %></p>
                             
                             <div class="card-actions">
-                                <!-- Like Button -->
-                                <form method="POST" action="/like-thought" style="margin:0;" class="like-form">
-                                    <input type="hidden" name="thoughtId" value="<%= thought.id %>">
-                                    <button type="submit" class="action-btn like-btn <% if (thought.likedBy && thought.likedBy.includes(email)) { %>liked<% } %>" data-liked="<%= thought.likedBy && thought.likedBy.includes(email) ? 'true' : 'false' %>">
-                                        <i class="<% if (thought.likedBy && thought.likedBy.includes(email)) { %>ri-heart-fill<% } else { %>ri-heart-line<% } %>"></i>
-                                        <span class="like-count"><%= thought.likedBy ? thought.likedBy.length : 0 %></span>
-                                    </button>
-                                </form>
-
-                                <!-- Comment Button -->
-                                <button type="button" class="action-btn comment-btn" onclick="toggleReplies('<%= thought.id %>')">
-                                    <i class="ri-chat-3-line"></i>
-                                    <span><%= thought.replies ? thought.replies.length : 0 %></span>
+                                <button type="button" class="action-btn like-btn <% if (thought.likedBy && thought.likedBy.includes(email)) { %>liked<% } %>" data-thought-id="<%= thought.id %>" data-liked="<%= thought.likedBy && thought.likedBy.includes(email) ? 'true' : 'false' %>">
+                                    <i class="<% if (thought.likedBy && thought.likedBy.includes(email)) { %>ri-heart-fill<% } else { %>ri-heart-line<% } %>"></i>
+                                    <span class="like-count"><%= thought.likedBy ? thought.likedBy.length : 0 %></span>
                                 </button>
 
-                                <!-- Delete Button -->
+                                <button type="button" class="action-btn comment-btn" onclick="toggleReplies('<%= thought.id %>')">
+                                    <i class="ri-chat-3-line"></i>
+                                    <span class="reply-count-<%= thought.id %>"><%= thought.replies ? thought.replies.length : 0 %></span>
+                                </button>
+
                                 <% if (thought.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %>
-                                    <form method="POST" action="/delete-thought" style="margin:0;">
-                                        <input type="hidden" name="thoughtId" value="<%= thought.id %>">
-                                        <input type="hidden" name="thoughtUserEmail" value="<%= thought.userEmail %>">
-                                        <button type="submit" class="action-btn delete-btn" onclick="return confirm('Delete this thought?')">
-                                            <i class="ri-delete-bin-line"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" class="action-btn delete-btn" data-thought-id="<%= thought.id %>" data-user-email="<%= thought.userEmail %>">
+                                        <i class="ri-delete-bin-line"></i>
+                                    </button>
                                 <% } %>
                             </div>
 
                             <!-- Replies Section -->
                             <div id="replies-<%= thought.id %>" class="replies-container">
-                                <% if (thought.replies && thought.replies.length > 0) { %>
-                                    <% thought.replies.forEach(function(reply, replyIndex) { %>
-                                        <div class="reply-item" style="animation-delay: <%= replyIndex * 0.1 %>s">
-                                            <div class="reply-avatar">
-                                                <% if (reply.profilePic && reply.profilePic.startsWith('http')) { %>
-                                                    <img src="<%= reply.profilePic %>" alt="">
-                                                <% } else if (reply.profilePic) { %>
-                                                    <img src="/uploads/<%= reply.profilePic %>" alt="">
-                                                <% } else { %>
-                                                    <%= reply.userName.charAt(0).toUpperCase() %>
-                                                <% } %>
-                                            </div>
-                                            <div class="reply-content">
-                                                <div class="reply-user-name"><%= reply.userName %></div>
-                                                <div class="reply-text"><%= reply.text %></div>
-                                                <div class="reply-time"><%= formatToIST(reply.timestamp) %></div>
-                                            </div>
-                                            <% if (reply.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %>
-                                                <form method="POST" action="/delete-reply" style="margin:0;">
-                                                    <input type="hidden" name="replyId" value="<%= reply.id %>">
-                                                    <input type="hidden" name="replyUserEmail" value="<%= reply.userEmail %>">
-                                                    <button type="submit" class="action-btn" style="padding:6px 10px;" onclick="return confirm('Delete?')">
+                                <div class="replies-list" id="replies-list-<%= thought.id %>">
+                                    <% if (thought.replies && thought.replies.length > 0) { %>
+                                        <% thought.replies.forEach(function(reply) { %>
+                                            <div class="reply-item" data-reply-id="<%= reply.id %>" data-user-email="<%= reply.userEmail %>">
+                                                <div class="reply-avatar">
+                                                    <% if (reply.profilePic && reply.profilePic.startsWith('http')) { %>
+                                                        <img src="<%= reply.profilePic %>" alt="">
+                                                    <% } else if (reply.profilePic) { %>
+                                                        <img src="/uploads/<%= reply.profilePic %>" alt="">
+                                                    <% } else { %>
+                                                        <%= reply.userName.charAt(0).toUpperCase() %>
+                                                    <% } %>
+                                                </div>
+                                                <div class="reply-content">
+                                                    <div class="reply-user-name"><%= reply.userName %></div>
+                                                    <div class="reply-text"><%= reply.text %></div>
+                                                    <div class="reply-time"><%= formatToIST(reply.timestamp) %></div>
+                                                </div>
+                                                <% if (reply.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %>
+                                                    <button type="button" class="action-btn delete-reply-btn" data-reply-id="<%= reply.id %>" data-user-email="<%= reply.userEmail %>" style="padding:6px 8px;">
                                                         <i class="ri-delete-bin-line"></i>
                                                     </button>
-                                                </form>
-                                            <% } %>
-                                        </div>
-                                    <% }); %>
-                                <% } %>
+                                                <% } %>
+                                            </div>
+                                        <% }); %>
+                                    <% } %>
+                                </div>
                                 
-                                <form class="reply-form" method="POST" action="/reply/<%= thought.id %>">
+                                <form class="reply-form" data-thought-id="<%= thought.id %>">
                                     <input type="text" name="replyText" class="reply-input" placeholder="Write a reply..." required maxlength="200">
                                     <button type="submit" class="btn-reply-submit">
                                         <i class="ri-reply-line"></i> Reply
@@ -968,123 +822,336 @@
                             </div>
                         </article>
                     <% }); %>
-                </div>
-            <% } else { %>
-                <div class="empty-state">
-                    <div class="empty-icon"><i class="ri-chat-smile-3-line"></i></div>
-                    <h3 class="empty-title">No thoughts yet</h3>
-                    <p class="empty-text">Be the first to share something amazing!</p>
-                </div>
-            <% } %>
+                <% } else { %>
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon"><i class="ri-chat-smile-3-line"></i></div>
+                        <h3 class="empty-title">No thoughts yet</h3>
+                        <p class="empty-text">Be the first to share something!</p>
+                    </div>
+                <% } %>
+            </div>
         </section>
     </div>
 
     <script>
-        // Toggle Replies
-        function toggleReplies(id) {
-            const container = document.getElementById('replies-' + id);
-            container.classList.toggle('show');
+        const currentUserEmail = '<%= email %>';
+        const currentUserName = '<%= name %>';
+        const currentUserPic = '<%= profilePic || "" %>';
+        const isAdmin = <%= typeof isAdmin !== 'undefined' && isAdmin ? 'true' : 'false' %>;
+
+        // Format date to IST
+        function formatToIST(dateStr) {
+            const d = new Date(dateStr);
+            const istOffset = 5.5 * 60 * 60 * 1000;
+            const istDate = new Date(d.getTime() + istOffset);
+            
+            const day = String(istDate.getUTCDate()).padStart(2, '0');
+            const month = String(istDate.getUTCMonth() + 1).padStart(2, '0');
+            const year = istDate.getUTCFullYear();
+            
+            let hours = istDate.getUTCHours();
+            const minutes = String(istDate.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(istDate.getUTCSeconds()).padStart(2, '0');
+            
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            
+            return `${day}/${month}/${year}, ${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
         }
 
-        // Heart Burst Animation on Like
-        document.querySelectorAll('.like-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const btn = this.querySelector('.like-btn');
-                const isLiked = btn.dataset.liked === 'true';
-                
-                if (!isLiked) {
-                    // Create heart burst effect
-                    const rect = btn.getBoundingClientRect();
-                    const burst = document.createElement('div');
-                    burst.className = 'heart-burst';
-                    burst.innerHTML = '<i class="ri-heart-fill"></i>';
-                    burst.style.left = (rect.left + rect.width / 2 - 20) + 'px';
-                    burst.style.top = (rect.top + rect.height / 2 - 20) + 'px';
-                    document.body.appendChild(burst);
+        // Toggle Replies
+        function toggleReplies(id) {
+            document.getElementById('replies-' + id).classList.toggle('show');
+        }
 
-                    // Create particles
-                    for (let i = 0; i < 8; i++) {
-                        const particle = document.createElement('div');
-                        particle.className = 'heart-particles';
-                        particle.style.left = (rect.left + rect.width / 2) + 'px';
-                        particle.style.top = (rect.top + rect.height / 2) + 'px';
-                        particle.style.setProperty('--angle', (i * 45) + 'deg');
-                        document.body.appendChild(particle);
-                        
-                        setTimeout(() => particle.remove(), 600);
+        // Update thought count
+        function updateThoughtCount() {
+            const count = document.querySelectorAll('.thought-card').length;
+            document.getElementById('thoughtCount').textContent = count + ' thoughts';
+        }
+
+        // Show heart burst animation
+        function showHeartBurst(btn) {
+            const rect = btn.getBoundingClientRect();
+            const burst = document.createElement('div');
+            burst.className = 'heart-burst-container';
+            burst.innerHTML = '<i class="ri-heart-fill"></i>';
+            burst.style.left = (rect.left + rect.width / 2 - 25) + 'px';
+            burst.style.top = (rect.top + rect.height / 2 - 25) + 'px';
+            document.body.appendChild(burst);
+            setTimeout(() => burst.remove(), 700);
+        }
+
+        // ==================== LIKE (AJAX) ====================
+        document.addEventListener('click', async function(e) {
+            const likeBtn = e.target.closest('.like-btn');
+            if (!likeBtn) return;
+
+            likeBtn.disabled = true;
+            const thoughtId = likeBtn.dataset.thoughtId;
+            const isLiked = likeBtn.dataset.liked === 'true';
+
+            try {
+                const res = await fetch('/api/like-thought', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ thoughtId })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    likeBtn.dataset.liked = data.liked ? 'true' : 'false';
+                    likeBtn.querySelector('.like-count').textContent = data.count;
+                    
+                    const icon = likeBtn.querySelector('i');
+                    if (data.liked) {
+                        likeBtn.classList.add('liked');
+                        icon.className = 'ri-heart-fill';
+                        showHeartBurst(likeBtn);
+                    } else {
+                        likeBtn.classList.remove('liked');
+                        icon.className = 'ri-heart-line';
                     }
+                }
+            } catch (err) {
+                console.error('Like error:', err);
+            }
+            
+            likeBtn.disabled = false;
+        });
 
-                    // Remove burst after animation
-                    setTimeout(() => burst.remove(), 800);
+        // ==================== ADD THOUGHT (AJAX) ====================
+        document.getElementById('thoughtForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const input = document.getElementById('thoughtInput');
+            const btn = document.getElementById('postBtn');
+            const thought = input.value.trim();
+            
+            if (!thought) return;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner"></div>';
 
-                    // Animate button
-                    btn.style.animation = 'heartPop 0.5s ease';
+            try {
+                const res = await fetch('/api/add-thought', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ thought })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    // Remove empty state if exists
+                    const emptyState = document.getElementById('emptyState');
+                    if (emptyState) emptyState.remove();
+
+                    // Create new thought card
+                    const thoughtsFeed = document.getElementById('thoughtsFeed');
+                    const card = document.createElement('article');
+                    card.className = 'thought-card own-thought';
+                    card.dataset.thoughtId = data.thought.id;
+                    card.dataset.userEmail = data.thought.userEmail;
+                    
+                    const profileImg = data.thought.profilePic 
+                        ? `<img src="${data.thought.profilePic}" alt="">` 
+                        : data.thought.userName.charAt(0).toUpperCase();
+                    
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div class="card-avatar">${profileImg}</div>
+                            <div class="card-user-info">
+                                <div class="card-user-name">${data.thought.userName} <span class="you-badge">You</span></div>
+                                <div class="card-timestamp">${formatToIST(data.thought.timestamp)}</div>
+                            </div>
+                        </div>
+                        <p class="card-message">${data.thought.message}</p>
+                        <div class="card-actions">
+                            <button type="button" class="action-btn like-btn" data-thought-id="${data.thought.id}" data-liked="false">
+                                <i class="ri-heart-line"></i>
+                                <span class="like-count">0</span>
+                            </button>
+                            <button type="button" class="action-btn comment-btn" onclick="toggleReplies('${data.thought.id}')">
+                                <i class="ri-chat-3-line"></i>
+                                <span class="reply-count-${data.thought.id}">0</span>
+                            </button>
+                            <button type="button" class="action-btn delete-btn" data-thought-id="${data.thought.id}" data-user-email="${data.thought.userEmail}">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </div>
+                        <div id="replies-${data.thought.id}" class="replies-container">
+                            <div class="replies-list" id="replies-list-${data.thought.id}"></div>
+                            <form class="reply-form" data-thought-id="${data.thought.id}">
+                                <input type="text" name="replyText" class="reply-input" placeholder="Write a reply..." required maxlength="200">
+                                <button type="submit" class="btn-reply-submit"><i class="ri-reply-line"></i> Reply</button>
+                            </form>
+                        </div>
+                    `;
+                    
+                    thoughtsFeed.insertBefore(card, thoughtsFeed.firstChild);
+                    input.value = '';
+                    updateThoughtCount();
+                }
+            } catch (err) {
+                console.error('Post error:', err);
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ri-send-plane-fill"></i>';
+        });
+
+        // ==================== DELETE THOUGHT (AJAX) ====================
+        document.addEventListener('click', async function(e) {
+            const deleteBtn = e.target.closest('.delete-btn:not(.delete-reply-btn)');
+            if (!deleteBtn) return;
+            
+            if (!confirm('Delete this thought?')) return;
+
+            const thoughtId = deleteBtn.dataset.thoughtId;
+            const thoughtUserEmail = deleteBtn.dataset.userEmail;
+            const card = deleteBtn.closest('.thought-card');
+
+            deleteBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/delete-thought', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ thoughtId, thoughtUserEmail })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    card.classList.add('removing');
                     setTimeout(() => {
-                        btn.style.animation = '';
-                    }, 500);
+                        card.remove();
+                        updateThoughtCount();
+                        
+                        // Show empty state if no thoughts
+                        if (document.querySelectorAll('.thought-card').length === 0) {
+                            document.getElementById('thoughtsFeed').innerHTML = `
+                                <div class="empty-state" id="emptyState">
+                                    <div class="empty-icon"><i class="ri-chat-smile-3-line"></i></div>
+                                    <h3 class="empty-title">No thoughts yet</h3>
+                                    <p class="empty-text">Be the first to share something!</p>
+                                </div>
+                            `;
+                        }
+                    }, 400);
                 }
-            });
+            } catch (err) {
+                console.error('Delete error:', err);
+                deleteBtn.disabled = false;
+            }
         });
 
-        // Add click ripple effect to buttons
-        document.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                const rect = this.getBoundingClientRect();
-                const ripple = document.createElement('span');
-                ripple.style.cssText = `
-                    position: absolute;
-                    width: 10px;
-                    height: 10px;
-                    background: rgba(168, 85, 247, 0.3);
-                    border-radius: 50%;
-                    transform: translate(-50%, -50%);
-                    left: ${e.clientX - rect.left}px;
-                    top: ${e.clientY - rect.top}px;
-                    animation: ripple 0.6s ease forwards;
-                    pointer-events: none;
-                `;
-                this.appendChild(ripple);
-                setTimeout(() => ripple.remove(), 600);
-            });
+        // ==================== REPLY (AJAX) ====================
+        document.addEventListener('submit', async function(e) {
+            if (!e.target.classList.contains('reply-form')) return;
+            e.preventDefault();
+
+            const form = e.target;
+            const thoughtId = form.dataset.thoughtId;
+            const input = form.querySelector('.reply-input');
+            const btn = form.querySelector('.btn-reply-submit');
+            const replyText = input.value.trim();
+
+            if (!replyText) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+
+            try {
+                const res = await fetch(`/api/reply/${thoughtId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ replyText })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const repliesList = document.getElementById('replies-list-' + thoughtId);
+                    const replyEl = document.createElement('div');
+                    replyEl.className = 'reply-item';
+                    replyEl.dataset.replyId = data.reply.id;
+                    replyEl.dataset.userEmail = data.reply.userEmail;
+                    
+                    const profileImg = data.reply.profilePic 
+                        ? `<img src="${data.reply.profilePic}" alt="">` 
+                        : data.reply.userName.charAt(0).toUpperCase();
+                    
+                    replyEl.innerHTML = `
+                        <div class="reply-avatar">${profileImg}</div>
+                        <div class="reply-content">
+                            <div class="reply-user-name">${data.reply.userName}</div>
+                            <div class="reply-text">${data.reply.text}</div>
+                            <div class="reply-time">${formatToIST(data.reply.timestamp)}</div>
+                        </div>
+                        <button type="button" class="action-btn delete-reply-btn" data-reply-id="${data.reply.id}" data-user-email="${data.reply.userEmail}" style="padding:6px 8px;">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    `;
+                    
+                    repliesList.appendChild(replyEl);
+                    input.value = '';
+                    
+                    // Update reply count
+                    const countEl = document.querySelector('.reply-count-' + thoughtId);
+                    if (countEl) countEl.textContent = parseInt(countEl.textContent) + 1;
+                }
+            } catch (err) {
+                console.error('Reply error:', err);
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="ri-reply-line"></i> Reply';
         });
 
-        // Intersection Observer for scroll animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+        // ==================== DELETE REPLY (AJAX) ====================
+        document.addEventListener('click', async function(e) {
+            const deleteBtn = e.target.closest('.delete-reply-btn');
+            if (!deleteBtn) return;
+            
+            if (!confirm('Delete this reply?')) return;
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+            const replyId = deleteBtn.dataset.replyId;
+            const replyUserEmail = deleteBtn.dataset.userEmail;
+            const replyItem = deleteBtn.closest('.reply-item');
+            const thoughtCard = deleteBtn.closest('.thought-card');
+            const thoughtId = thoughtCard.dataset.thoughtId;
+
+            deleteBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/delete-reply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ replyId, replyUserEmail })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    replyItem.classList.add('removing');
+                    setTimeout(() => {
+                        replyItem.remove();
+                        // Update reply count
+                        const countEl = document.querySelector('.reply-count-' + thoughtId);
+                        if (countEl) countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
+                    }, 300);
                 }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.thought-card').forEach(card => {
-            observer.observe(card);
+            } catch (err) {
+                console.error('Delete reply error:', err);
+                deleteBtn.disabled = false;
+            }
         });
 
         // Auth check
         setInterval(function() {
             fetch('/api/auth-status')
                 .then(r => r.json())
-                .then(d => { 
-                    if (!d.isLoggedIn) window.location.href = '/login'; 
-                })
+                .then(d => { if (!d.isLoggedIn) window.location.href = '/login'; })
                 .catch(() => {});
-        }, 2000);
-
-        // Input focus animation
-        document.querySelector('.thought-input').addEventListener('focus', function() {
-            this.parentElement.parentElement.style.transform = 'scale(1.01)';
-        });
-
-        document.querySelector('.thought-input').addEventListener('blur', function() {
-            this.parentElement.parentElement.style.transform = 'scale(1)';
-        });
+        }, 5000);
     </script>
 </body>
 </html>

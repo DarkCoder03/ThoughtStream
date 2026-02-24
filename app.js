@@ -745,6 +745,170 @@ app.get('/api/auth-status', (req, res) => {
     });
 });
 
+
+// ==========================================
+// AJAX API ROUTES (No Page Reload)
+// ==========================================
+
+// AJAX Like
+app.post('/api/like-thought', isAuthenticated, async (req, res) => {
+    const thoughtId = parseInt(req.body.thoughtId);
+    const userEmail = req.session.userEmail;
+
+    try {
+        const result = await db.query('SELECT liked_by FROM thoughts WHERE id = $1', [thoughtId]);
+        
+        if (result.rows.length > 0) {
+            let likedBy = result.rows[0].liked_by || [];
+            let liked = false;
+            
+            const likeIndex = likedBy.indexOf(userEmail);
+            
+            if (likeIndex > -1) {
+                likedBy.splice(likeIndex, 1);
+                liked = false;
+            } else {
+                likedBy.push(userEmail);
+                liked = true;
+            }
+            
+            await db.query('UPDATE thoughts SET liked_by = $1 WHERE id = $2', [likedBy, thoughtId]);
+            
+            return res.json({ 
+                success: true, 
+                liked: liked, 
+                count: likedBy.length 
+            });
+        }
+        
+        res.json({ success: false });
+    } catch (err) {
+        console.error('Like error:', err);
+        res.json({ success: false, error: err.message });
+    }
+});
+
+// AJAX Reply
+app.post('/api/reply/:thoughtId', isAuthenticated, async (req, res) => {
+    const thoughtId = parseInt(req.params.thoughtId);
+    const replyText = req.body.replyText ? req.body.replyText.trim() : '';
+    const userName = req.session.userName;
+    const userEmail = req.session.userEmail;
+
+    if (replyText === '') {
+        return res.json({ success: false, error: 'Empty reply' });
+    }
+
+    try {
+        const query = `
+            INSERT INTO replies (thought_id, user_name, user_email, reply_text) 
+            VALUES ($1, $2, $3, $4) RETURNING *
+        `;
+        const result = await db.query(query, [thoughtId, userName, userEmail, replyText]);
+        
+        // Get user profile pic
+        const userResult = await db.query('SELECT profile_pic FROM users WHERE email = $1', [userEmail]);
+        const profilePic = userResult.rows[0]?.profile_pic || null;
+
+        res.json({ 
+            success: true, 
+            reply: {
+                id: result.rows[0].id,
+                userName: userName,
+                userEmail: userEmail,
+                text: replyText,
+                timestamp: result.rows[0].created_at,
+                profilePic: profilePic
+            }
+        });
+    } catch (err) {
+        console.error('Reply error:', err);
+        res.json({ success: false, error: err.message });
+    }
+});
+
+// AJAX Delete Thought
+app.post('/api/delete-thought', isAuthenticated, async (req, res) => {
+    const thoughtId = parseInt(req.body.thoughtId);
+    const thoughtUserEmail = req.body.thoughtUserEmail;
+    const userEmail = req.session.userEmail;
+    const isAdmin = req.session.isAdmin;
+
+    if (thoughtUserEmail !== userEmail && !isAdmin) {
+        return res.json({ success: false, error: 'Not authorized' });
+    }
+
+    try {
+        await db.query('DELETE FROM replies WHERE thought_id = $1', [thoughtId]);
+        await db.query('DELETE FROM thoughts WHERE id = $1', [thoughtId]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Delete error:', err);
+        res.json({ success: false, error: err.message });
+    }
+});
+
+// AJAX Delete Reply
+app.post('/api/delete-reply', isAuthenticated, async (req, res) => {
+    const replyId = parseInt(req.body.replyId);
+    const replyUserEmail = req.body.replyUserEmail;
+    const userEmail = req.session.userEmail;
+    const isAdmin = req.session.isAdmin;
+
+    if (replyUserEmail !== userEmail && !isAdmin) {
+        return res.json({ success: false, error: 'Not authorized' });
+    }
+
+    try {
+        await db.query('DELETE FROM replies WHERE id = $1', [replyId]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Delete reply error:', err);
+        res.json({ success: false, error: err.message });
+    }
+});
+
+// AJAX Add Thought
+app.post('/api/add-thought', isAuthenticated, async (req, res) => {
+    const thought = req.body.thought ? req.body.thought.trim() : '';
+    const userId = req.session.userId;
+    const userName = req.session.userName;
+    const userEmail = req.session.userEmail;
+
+    if (thought === '') {
+        return res.json({ success: false, error: 'Empty thought' });
+    }
+
+    try {
+        const query = `
+            INSERT INTO thoughts (user_id, user_name, user_email, message, liked_by) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING *
+        `;
+        const result = await db.query(query, [userId, userName, userEmail, thought, []]);
+        
+        // Get user profile pic
+        const userResult = await db.query('SELECT profile_pic FROM users WHERE email = $1', [userEmail]);
+        const profilePic = userResult.rows[0]?.profile_pic || null;
+
+        res.json({ 
+            success: true, 
+            thought: {
+                id: result.rows[0].id,
+                userName: userName,
+                userEmail: userEmail,
+                message: thought,
+                timestamp: result.rows[0].created_at,
+                likedBy: [],
+                profilePic: profilePic,
+                replies: []
+            }
+        });
+    } catch (err) {
+        console.error('Add thought error:', err);
+        res.json({ success: false, error: err.message });
+    }
+});
+
 // ==========================================
 // START SERVER
 // ==========================================
