@@ -603,3 +603,56 @@ app.get('/api/auth-status', (req, res) => {
 // START SERVER
 // ==========================================
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+
+
+
+
+// TEMPORARY: Setup admin - DELETE AFTER USE!
+app.get('/setup-admin-xyz123', async (req, res) => {
+    try {
+        const email = 'anuplynn88@gmail.com';
+        const password = '1234567890';
+        const name = 'Anup';
+        
+        // Create in Supabase Auth
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: { name: name },
+                emailRedirectTo: `${process.env.SITE_URL}/verify-success`
+            }
+        });
+        
+        if (error) {
+            console.log('Supabase Auth:', error.message);
+        } else {
+            console.log('✅ Created in Supabase Auth');
+        }
+        
+        // Create/Update in our DB
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await db.query(`
+            INSERT INTO users (name, email, password, is_admin, is_verified)
+            VALUES ($1, $2, $3, true, true)
+            ON CONFLICT (email) 
+            DO UPDATE SET is_admin = true, is_verified = true, password = $3
+        `, [name, email, hashedPassword]);
+        
+        console.log('✅ Created/Updated in database');
+        
+        res.send(`
+            <h1>✅ Admin Setup Complete!</h1>
+            <p>Email: ${email}</p>
+            <p>Password: ${password}</p>
+            <p><strong>Check your email for verification link!</strong></p>
+            <p><a href="/login">Go to Login</a></p>
+            <p style="color:red;">⚠️ DELETE this route from app.js after use!</p>
+        `);
+        
+    } catch (err) {
+        console.error('Setup error:', err);
+        res.send('Error: ' + err.message);
+    }
+});
