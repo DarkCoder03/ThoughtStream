@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Error - ThoughtStream</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: linear-gradient(180deg, #f8f9fa 0%, #f3e8ff 50%, #fce7f3 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: white; border-radius: 28px; padding: 50px 40px; max-width: 450px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(168, 85, 247, 0.1); }
+        .error-icon { width: 100px; height: 100px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; }
+        .error-icon i { font-size: 50px; color: white; }
+        h1 { font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+        p { color: #6b7280; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
+        .error-msg { background: #fef2f2; color: #dc2626; padding: 14px; border-radius: 12px; font-size: 14px; margin-bottom: 25px; }
+        .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 30px; border-radius: 12px; font-weight: 600; font-size: 15px; text-decoration: none; transition: all 0.3s ease; margin: 5px; }
+        .btn-primary { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3); }
+        .btn-secondary { background: #f3f4f6; color: #374151; border: 2px solid #e5e7eb; }
+        .btn-secondary:hover { border-color: #a855f7; color: #a855f7; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-icon">
+            <i class="ri-error-warning-line"></i>
+        </div>
+        <h1>Verification Failed</h1>
+        <p>Something went wrong while verifying your email.</p>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="error-msg">
+                <i class="ri-information-line"></i> <%= error %>
+            </div>
+        <% } %>
+        
+        <p>The verification link may have expired. Please try registering again or request a new verification email.</p>
+        
+        <div>
+            <a href="/register" class="btn btn-primary">
+                <i class="ri-user-add-line"></i> Register Again
+            </a>
+            <a href="/login" class="btn btn-secondary">
+                <i class="ri-login-box-line"></i> Login
+            </a>
+        </div>
+    </div>
+</body>
+</html>

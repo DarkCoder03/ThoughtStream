@@ -82,6 +82,89 @@ app.get('/', (req, res) => {
 // REGISTER - With Supabase Email Verification
 // ==========================================
 // ==========================================
+// REGISTER - With Supabase Email Verification
+// ==========================================
+app.post('/register', async (req, res) => {
+    const name = req.body.name ? req.body.name.trim() : '';
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+    const password = req.body.password ? req.body.password.trim() : '';
+    const confirmPassword = req.body.confirmPassword ? req.body.confirmPassword.trim() : '';
+
+    // Validation
+    if (!name || !email || !password || !confirmPassword) {
+        return res.render('register', { error: 'All fields are required.', success: null });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.render('register', { error: 'Please enter a valid email.', success: null });
+    }
+
+    // Allowed email domains
+    const allowedDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'live.com'];
+    const emailDomain = email.split('@')[1];
+    if (!allowedDomains.includes(emailDomain)) {
+        return res.render('register', { error: 'Only Gmail and Outlook emails allowed.', success: null });
+    }
+
+    if (password.length < 6) {
+        return res.render('register', { error: 'Password must be at least 6 characters.', success: null });
+    }
+
+    if (password !== confirmPassword) {
+        return res.render('register', { error: 'Passwords do not match.', success: null });
+    }
+
+    try {
+        // Check if email exists
+        const checkResult = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
+        if (checkResult.rows.length > 0) {
+            return res.render('register', { error: 'Email already registered. Please login.', success: null });
+        }
+
+        // IMPORTANT: Use the correct Render URL
+        const siteUrl = process.env.SITE_URL || 'https://thoughtstream-xgn8.onrender.com';
+
+        // Register with Supabase Auth
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: { name: name },
+                emailRedirectTo: `${siteUrl}/verify-success`
+            }
+        });
+
+        if (error) {
+            console.error('Supabase signup error:', error);
+            return res.render('register', { error: error.message, success: null });
+        }
+
+        // Save to our users table
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+        await db.query(
+            'INSERT INTO users (name, email, password, is_verified) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING',
+            [name, email, hashedPassword, false]
+        );
+
+        console.log('✅ User registered:', email);
+
+        return res.render('register', { 
+            error: null, 
+            success: 'Registration successful! Please check your email to verify your account.' 
+        });
+
+    } catch (err) {
+        console.error('Register error:', err);
+        return res.render('register', { error: 'Something went wrong. Please try again.', success: null });
+    }
+});
+
+
+
+
+
+// ==========================================
 // REGISTER - With Email Domain Restriction
 // ==========================================
 app.get('/register', (req, res) => {
@@ -170,21 +253,36 @@ app.post('/register', async (req, res) => {
 // ==========================================
 // VERIFY SUCCESS PAGE (After clicking email link)
 // ==========================================
+// ==========================================
+// VERIFY SUCCESS PAGE
+// ==========================================
 app.get('/verify-success', async (req, res) => {
-    // Supabase redirects here after email verification
-    // Update our database to mark user as verified
-    
+    // Handle different Supabase redirect formats
     const token_hash = req.query.token_hash;
     const type = req.query.type;
-    
-    if (token_hash && type === 'email') {
+    const access_token = req.query.access_token;
+    const error = req.query.error;
+    const error_description = req.query.error_description;
+
+    // If there's an error from Supabase
+    if (error) {
+        console.error('Verification error:', error, error_description);
+        return res.render('verify-error', { 
+            error: error_description || 'Verification failed. The link may have expired.' 
+        });
+    }
+
+    // Try to verify with token_hash
+    if (token_hash && type) {
         try {
-            const { data, error } = await supabase.auth.verifyOtp({
+            const { data, error: verifyError } = await supabase.auth.verifyOtp({
                 token_hash,
-                type: 'email'
+                type: type
             });
             
-            if (data?.user?.email) {
+            if (verifyError) {
+                console.error('OTP verify error:', verifyError);
+            } else if (data?.user?.email) {
                 // Mark user as verified in our database
                 await db.query('UPDATE users SET is_verified = true WHERE email = $1', [data.user.email]);
                 console.log('✅ User verified:', data.user.email);
@@ -193,7 +291,20 @@ app.get('/verify-success', async (req, res) => {
             console.error('Verify error:', err);
         }
     }
-    
+
+    // If we have access_token, user is already verified
+    if (access_token) {
+        try {
+            const { data: { user } } = await supabase.auth.getUser(access_token);
+            if (user?.email) {
+                await db.query('UPDATE users SET is_verified = true WHERE email = $1', [user.email]);
+                console.log('✅ User verified via access_token:', user.email);
+            }
+        } catch (err) {
+            console.error('Access token error:', err);
+        }
+    }
+
     res.render('verify-success');
 });
 
@@ -608,51 +719,3 @@ app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
 
 
 
-// TEMPORARY: Setup admin - DELETE AFTER USE!
-app.get('/setup-admin-xyz123', async (req, res) => {
-    try {
-        const email = 'anuplynn88@gmail.com';
-        const password = '1234567890';
-        const name = 'Anup';
-        
-        // Create in Supabase Auth
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: { name: name },
-                emailRedirectTo: `${process.env.SITE_URL}/verify-success`
-            }
-        });
-        
-        if (error) {
-            console.log('Supabase Auth:', error.message);
-        } else {
-            console.log('✅ Created in Supabase Auth');
-        }
-        
-        // Create/Update in our DB
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await db.query(`
-            INSERT INTO users (name, email, password, is_admin, is_verified)
-            VALUES ($1, $2, $3, true, true)
-            ON CONFLICT (email) 
-            DO UPDATE SET is_admin = true, is_verified = true, password = $3
-        `, [name, email, hashedPassword]);
-        
-        console.log('✅ Created/Updated in database');
-        
-        res.send(`
-            <h1>✅ Admin Setup Complete!</h1>
-            <p>Email: ${email}</p>
-            <p>Password: ${password}</p>
-            <p><strong>Check your email for verification link!</strong></p>
-            <p><a href="/login">Go to Login</a></p>
-            <p style="color:red;">⚠️ DELETE this route from app.js after use!</p>
-        `);
-        
-    } catch (err) {
-        console.error('Setup error:', err);
-        res.send('Error: ' + err.message);
-    }
-});
