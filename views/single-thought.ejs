@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= thought.userName %>'s Thought - ThoughtStream</title>
+    <meta property="og:title" content="<%= thought.userName %>'s Thought on ThoughtStream">
+    <meta property="og:description" content="<%= thought.message ? thought.message.substring(0, 150) : 'Check out this thought!' %>">
+    <% if (thought.image) { %><meta property="og:image" content="<%= thought.image %>"><% } %>
+    <meta property="og:url" content="<%= siteUrl %>/thought/<%= thought.id %>">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: linear-gradient(180deg, #f8f9fa 0%, #f3e8ff 50%, #fce7f3 100%); display: flex; flex-direction: column; align-items: center; padding: 40px 20px; }
+        .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; text-decoration: none; }
+        .logo-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+        .logo-icon i { font-size: 26px; color: white; }
+        .logo-text { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .thought-card { background: white; border-radius: 24px; padding: 30px; max-width: 500px; width: 100%; box-shadow: 0 15px 50px rgba(168, 85, 247, 0.1); }
+        .card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+        .card-avatar { width: 50px; height: 50px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 20px; overflow: hidden; }
+        .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .card-user-name { font-weight: 600; font-size: 17px; color: #1a1a2e; }
+        .card-timestamp { font-size: 13px; color: #9ca3af; margin-top: 3px; }
+        .card-message { font-size: 17px; line-height: 1.7; color: #374151; margin-bottom: 20px; }
+        .thought-image { width: 100%; border-radius: 16px; margin-bottom: 20px; }
+        .like-info { display: flex; align-items: center; gap: 8px; color: #ef4444; font-weight: 500; }
+        .like-info i { font-size: 20px; }
+        .cta-btn { display: block; margin-top: 25px; padding: 16px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; text-align: center; border-radius: 14px; text-decoration: none; font-weight: 600; font-size: 16px; transition: all 0.3s ease; }
+        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168, 85, 247, 0.3); }
+    </style>
+</head>
+<body>
+    <a href="/login" class="logo">
+        <div class="logo-icon"><i class="ri-bubble-chart-fill"></i></div>
+        <span class="logo-text">ThoughtStream</span>
+    </a>
+
+    <div class="thought-card">
+        <div class="card-header">
+            <div class="card-avatar">
+                <% if (thought.profilePic && thought.profilePic.startsWith('http')) { %><img src="<%= thought.profilePic %>" alt=""><% } else { %><%= thought.userName.charAt(0).toUpperCase() %><% } %>
+            </div>
+            <div>
+                <div class="card-user-name"><%= thought.userName %></div>
+                <div class="card-timestamp"><%= formatToIST(thought.timestamp) %></div>
+            </div>
+        </div>
+
+        <% if (thought.message) { %><p class="card-message"><%= thought.message %></p><% } %>
+        <% if (thought.image) { %><img src="<%= thought.image %>" alt="" class="thought-image"><% } %>
+        
+        <div class="like-info"><i class="ri-heart-fill"></i> <%= thought.likeCount %> likes</div>
+
+        <a href="/login" class="cta-btn">Join ThoughtStream</a>
+    </div>
+</body>
+</html>

@@ -5,693 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ThoughtStream</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" type="image/png" href="/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            min-height: 100vh; 
-            background: linear-gradient(180deg, #f8f9fa 0%, #f3e8ff 50%, #fce7f3 100%);
-            background-attachment: fixed;
-            color: #1a1a2e; 
-        }
+        body { font-family: 'Inter', sans-serif; min-height: 100vh; background: linear-gradient(180deg, #f8f9fa 0%, #f3e8ff 50%, #fce7f3 100%); background-attachment: fixed; color: #1a1a2e; }
 
-        /* ==================== ANIMATIONS ==================== */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes heartBurst { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.8); } 100% { transform: scale(2.5); opacity: 0; } }
+        @keyframes heartPop { 0% { transform: scale(1); } 30% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        @keyframes slideOut { to { opacity: 0; transform: scale(0.9); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes heartBurst {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.8); opacity: 0.8; }
-            100% { transform: scale(2.5); opacity: 0; }
-        }
-
-        @keyframes heartPop {
-            0% { transform: scale(1); }
-            30% { transform: scale(1.3); }
-            60% { transform: scale(0.9); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes slideOut {
-            from { opacity: 1; transform: translateX(0) scale(1); }
-            to { opacity: 0; transform: translateX(-20px) scale(0.9); }
-        }
-
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-
-        /* ==================== TOP NAV ==================== */
-        .top-nav { 
-            background: rgba(255, 255, 255, 0.98); 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(229, 231, 235, 0.6); 
-            padding: 14px 20px; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100;
-            animation: fadeInDown 0.4s ease;
-        }
-
-        .top-nav-container { 
-            max-width: 700px; 
-            margin: 0 auto; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-
-        .logo { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            text-decoration: none;
-            transition: transform 0.3s ease;
-        }
-
+        .top-nav { background: rgba(255,255,255,0.98); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(229,231,235,0.6); padding: 14px 20px; position: sticky; top: 0; z-index: 100; animation: fadeInDown 0.4s ease; }
+        .top-nav-container { max-width: 700px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; transition: transform 0.3s ease; }
         .logo:hover { transform: scale(1.02); }
+        .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(168,85,247,0.3); }
+        .logo-icon i { font-size: 22px; color: white; }
+        .logo-text { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-actions { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; overflow: hidden; transition: all 0.3s ease; cursor: pointer; }
+        .user-avatar:hover { transform: scale(1.08); }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; text-decoration: none; transition: all 0.3s ease; }
+        .btn-settings { background: #f3f4f6; color: #6b7280; }
+        .btn-settings:hover { color: #a855f7; background: #ede9fe; transform: rotate(90deg); }
+        .btn-admin { background: #fef2f2; color: #ef4444; }
+        .btn-admin:hover { background: #fee2e2; transform: scale(1.08); }
 
-        .logo-icon { 
-            width: 42px; 
-            height: 42px; 
-            background: linear-gradient(135deg, #a855f7, #ec4899); 
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
-            transition: all 0.3s ease;
-        }
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .welcome-section { text-align: center; padding: 45px 0 40px; animation: fadeIn 0.5s ease; }
+        .welcome-text { font-size: 34px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+        .welcome-text span { background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .welcome-subtext { color: #9ca3af; font-size: 15px; }
 
-        .logo:hover .logo-icon {
-            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
-        }
-
-        .logo-icon i { 
-            font-size: 22px; 
-            color: white;
-        }
-
-        .logo-text { 
-            font-size: 20px; 
-            font-weight: 700; 
-            background: linear-gradient(135deg, #a855f7, #ec4899); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent;
-        }
-
-        .nav-actions { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-
-        .user-avatar { 
-            width: 40px; 
-            height: 40px; 
-            background: linear-gradient(135deg, #a855f7, #ec4899); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: white; 
-            font-weight: 600; 
-            font-size: 16px; 
-            overflow: hidden;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            box-shadow: 0 3px 12px rgba(168, 85, 247, 0.25);
-        }
-
-        .user-avatar:hover {
-            transform: scale(1.08);
-            box-shadow: 0 5px 18px rgba(168, 85, 247, 0.35);
-        }
-
-        .user-avatar img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover;
-        }
-
-        .nav-btn { 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 20px; 
-            text-decoration: none; 
-            transition: all 0.3s ease;
-        }
-
-        .btn-settings { 
-            background: #f3f4f6; 
-            color: #6b7280; 
-        }
-
-        .btn-settings:hover { 
-            color: #a855f7; 
-            background: #ede9fe;
-            transform: rotate(90deg);
-        }
-
-        .btn-admin { 
-            background: #fef2f2; 
-            color: #ef4444; 
-        }
-
-        .btn-admin:hover { 
-            background: #fee2e2;
-            transform: scale(1.08);
-        }
-
-        /* ==================== CONTAINER ==================== */
-        .container { 
-            max-width: 700px; 
-            margin: 0 auto; 
-            padding: 20px; 
-        }
-
-        /* ==================== WELCOME SECTION ==================== */
-        .welcome-section { 
-            text-align: center; 
-            padding: 45px 0 40px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .welcome-text { 
-            font-size: 34px; 
-            font-weight: 700; 
-            color: #1a1a2e; 
-            margin-bottom: 8px;
-        }
-
-        .welcome-text span { 
-            background: linear-gradient(135deg, #a855f7, #ec4899); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent;
-        }
-
-        .welcome-subtext { 
-            color: #9ca3af; 
-            font-size: 15px;
-        }
-
-        /* ==================== THOUGHT INPUT ==================== */
-        .thought-input-box { 
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 50px; 
-            padding: 8px 12px 8px 26px; 
-            box-shadow: 0 6px 25px rgba(168, 85, 247, 0.08);
-            border: 2px solid rgba(168, 85, 247, 0.08);
-            transition: all 0.3s ease;
-            animation: fadeInUp 0.5s ease 0.1s both;
-        }
-
-        .thought-input-box:focus-within {
-            border-color: rgba(168, 85, 247, 0.25);
-            box-shadow: 0 10px 35px rgba(168, 85, 247, 0.12);
-            transform: translateY(-2px);
-        }
-
-        .thought-form { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-        }
-
-        .thought-input { 
-            flex: 1; 
-            border: none; 
-            background: transparent; 
-            padding: 14px 0; 
-            font-size: 15px; 
-            color: #1a1a2e; 
-            outline: none; 
-            font-family: inherit; 
-        }
-
+        .thought-input-box { background: rgba(255,255,255,0.95); border-radius: 24px; padding: 18px 20px; box-shadow: 0 6px 25px rgba(168,85,247,0.08); border: 2px solid rgba(168,85,247,0.08); transition: all 0.3s ease; animation: fadeInUp 0.5s ease 0.1s both; }
+        .thought-input-box:focus-within { border-color: rgba(168,85,247,0.25); box-shadow: 0 10px 35px rgba(168,85,247,0.12); transform: translateY(-2px); }
+        .thought-form { display: flex; flex-direction: column; gap: 12px; }
+        .thought-input { border: none; background: transparent; padding: 10px 0; font-size: 15px; color: #1a1a2e; outline: none; font-family: inherit; resize: none; min-height: 60px; }
         .thought-input::placeholder { color: #b4b4b4; }
 
-        .btn-post { 
-            width: 48px; 
-            height: 48px; 
-            background: linear-gradient(135deg, #e5e7eb, #f3f4f6);
-            color: #9ca3af; 
-            border: none; 
-            border-radius: 50%; 
-            font-size: 19px; 
-            cursor: pointer; 
-            transition: all 0.3s ease;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-        }
+        .image-preview-container { display: none; position: relative; margin-bottom: 10px; }
+        .image-preview-container.show { display: block; animation: scaleIn 0.3s ease; }
+        .image-preview { max-width: 100%; max-height: 250px; border-radius: 16px; object-fit: cover; }
+        .remove-image-btn { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s ease; }
+        .remove-image-btn:hover { background: #ef4444; transform: scale(1.1); }
 
-        .btn-post:hover { 
-            background: linear-gradient(135deg, #a855f7, #ec4899); 
-            color: white;
-            transform: scale(1.08);
-            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
-        }
+        .input-actions { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid rgba(229,231,235,0.5); }
+        .input-left-actions { display: flex; gap: 8px; }
+        .input-action-btn { width: 42px; height: 42px; background: #f3f4f6; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #6b7280; transition: all 0.3s ease; }
+        .input-action-btn:hover { background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(236,72,153,0.1)); color: #a855f7; transform: scale(1.08); }
+        .input-action-btn.active { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; }
+        .btn-post { padding: 12px 28px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border: none; border-radius: 25px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(168,85,247,0.3); }
+        .btn-post:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(168,85,247,0.4); }
+        .btn-post:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .file-size-hint { font-size: 11px; color: #9ca3af; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
 
-        .btn-post:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* ==================== FEED SECTION ==================== */
-        .feed-section { 
-            margin-top: 40px;
-            animation: fadeInUp 0.5s ease 0.15s both;
-        }
-
-        .feed-header { 
-            display: flex; 
-            align-items: center; 
-            gap: 14px; 
-            margin-bottom: 22px;
-        }
-
-        .feed-title { 
-            font-size: 17px; 
-            font-weight: 600; 
-            color: #374151; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-        }
-
+        .feed-section { margin-top: 40px; animation: fadeInUp 0.5s ease 0.15s both; }
+        .feed-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+        .feed-title { font-size: 17px; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 8px; }
         .feed-title i { color: #a855f7; }
+        .feed-count { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
 
-        .feed-count { 
-            background: linear-gradient(135deg, #a855f7, #ec4899); 
-            color: white; 
-            padding: 5px 14px; 
-            border-radius: 20px; 
-            font-size: 13px; 
-            font-weight: 600;
-            box-shadow: 0 3px 12px rgba(168, 85, 247, 0.25);
-        }
-
-        /* ==================== THOUGHT CARDS ==================== */
-        .thoughts-feed { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 18px; 
-        }
-
-        .thought-card { 
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px; 
-            padding: 22px; 
-            border: 1px solid rgba(229, 231, 235, 0.6);
-            transition: all 0.3s ease;
-            animation: fadeInUp 0.4s ease both;
-            position: relative;
-        }
-
-        .thought-card:hover { 
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(168, 85, 247, 0.1);
-            border-color: rgba(168, 85, 247, 0.15);
-        }
-
-        .thought-card.removing {
-            animation: slideOut 0.4s ease forwards;
-        }
-
+        .thoughts-feed { display: flex; flex-direction: column; gap: 18px; }
+        .thought-card { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 22px; border: 1px solid rgba(229,231,235,0.6); transition: all 0.3s ease; animation: fadeInUp 0.4s ease both; }
+        .thought-card:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.15); }
+        .thought-card.removing { animation: slideOut 0.4s ease forwards; }
         .thought-card:nth-child(1) { animation-delay: 0.05s; }
         .thought-card:nth-child(2) { animation-delay: 0.1s; }
         .thought-card:nth-child(3) { animation-delay: 0.15s; }
-        .thought-card:nth-child(4) { animation-delay: 0.2s; }
-        .thought-card:nth-child(5) { animation-delay: 0.25s; }
+        .own-thought { border-left: 4px solid #a855f7; }
 
-        .own-thought { 
-            border-left: 4px solid #a855f7;
-        }
-
-        /* Card Header */
-        .card-header { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            margin-bottom: 14px;
-        }
-
-        .card-avatar { 
-            width: 44px; 
-            height: 44px; 
-            background: linear-gradient(135deg, #a855f7, #ec4899); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: white; 
-            font-weight: 600; 
-            overflow: hidden; 
-            font-size: 17px;
-            box-shadow: 0 3px 12px rgba(168, 85, 247, 0.2);
-            flex-shrink: 0;
-        }
-
-        .card-avatar img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover;
-        }
-
+        .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .card-avatar { width: 44px; height: 44px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; overflow: hidden; font-size: 17px; flex-shrink: 0; }
+        .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .card-user-info { flex: 1; }
+        .card-user-name { font-weight: 600; color: #1a1a2e; font-size: 15px; }
+        .you-badge { color: #a855f7; font-size: 11px; margin-left: 6px; font-weight: 600; background: rgba(168,85,247,0.1); padding: 2px 8px; border-radius: 8px; }
+        .card-timestamp { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+        .card-message { font-size: 15px; line-height: 1.65; color: #374151; margin-bottom: 14px; white-space: pre-wrap; word-wrap: break-word; }
 
-        .card-user-name { 
-            font-weight: 600; 
-            color: #1a1a2e; 
-            font-size: 15px;
-        }
+        .thought-image-container { margin-bottom: 14px; border-radius: 16px; overflow: hidden; }
+        .thought-image { width: 100%; max-height: 400px; object-fit: cover; cursor: pointer; transition: transform 0.3s ease; }
+        .thought-image:hover { transform: scale(1.01); }
 
-        .you-badge { 
-            color: #a855f7; 
-            font-size: 11px; 
-            margin-left: 6px;
-            font-weight: 600;
-            background: rgba(168, 85, 247, 0.1);
-            padding: 2px 8px;
-            border-radius: 8px;
-        }
-
-        .card-timestamp { 
-            font-size: 12px; 
-            color: #9ca3af; 
-            margin-top: 2px;
-        }
-
-        .card-message { 
-            font-size: 15px; 
-            line-height: 1.65; 
-            color: #374151; 
-            margin-bottom: 16px;
-        }
-
-        /* ==================== CARD ACTIONS ==================== */
-        .card-actions { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            padding-top: 14px; 
-            border-top: 1px solid rgba(243, 244, 246, 0.8);
-        }
-
-        .action-btn { 
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
-            background: rgba(249, 250, 251, 0.9);
-            border: 1px solid rgba(229, 231, 235, 0.6);
-            color: #9ca3af; 
-            font-size: 13px; 
-            cursor: pointer; 
-            padding: 9px 14px; 
-            border-radius: 10px; 
-            transition: all 0.25s ease;
-            font-family: inherit;
-        }
-
-        .action-btn i { 
-            font-size: 17px;
-            transition: transform 0.25s ease;
-        }
-
-        .action-btn:hover { 
-            background: rgba(168, 85, 247, 0.08);
-            color: #a855f7;
-            border-color: rgba(168, 85, 247, 0.2);
-            transform: translateY(-1px);
-        }
-
+        .card-actions { display: flex; align-items: center; gap: 8px; padding-top: 14px; border-top: 1px solid rgba(243,244,246,0.8); flex-wrap: wrap; }
+        .action-btn { display: flex; align-items: center; gap: 6px; background: rgba(249,250,251,0.9); border: 1px solid rgba(229,231,235,0.6); color: #9ca3af; font-size: 13px; cursor: pointer; padding: 9px 14px; border-radius: 10px; transition: all 0.25s ease; font-family: inherit; }
+        .action-btn i { font-size: 17px; transition: transform 0.25s ease; }
+        .action-btn:hover { background: rgba(168,85,247,0.08); color: #a855f7; border-color: rgba(168,85,247,0.2); transform: translateY(-1px); }
         .action-btn:hover i { transform: scale(1.1); }
-
-        .action-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* Like Button */
-        .like-btn.liked { 
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border-color: rgba(239, 68, 68, 0.2);
-        }
-
+        .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .like-btn.liked { background: rgba(239,68,68,0.1); color: #ef4444; border-color: rgba(239,68,68,0.2); }
         .like-btn.liked i { animation: heartPop 0.4s ease; }
-
-        .like-btn:hover:not(.liked) {
-            background: rgba(239, 68, 68, 0.08);
-            color: #ef4444;
-            border-color: rgba(239, 68, 68, 0.2);
-        }
-
-        /* Heart Burst Effect */
-        .heart-burst-container {
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .heart-burst-container i {
-            font-size: 50px;
-            color: #ef4444;
-            animation: heartBurst 0.7s ease-out forwards;
-        }
-
-        /* Delete Button */
+        .like-btn:hover:not(.liked) { background: rgba(239,68,68,0.08); color: #ef4444; border-color: rgba(239,68,68,0.2); }
+        .share-btn { color: #3b82f6; }
+        .share-btn:hover { background: rgba(59,130,246,0.08); color: #3b82f6; border-color: rgba(59,130,246,0.2); }
         .delete-btn { margin-left: auto; }
+        .delete-btn:hover { background: rgba(239,68,68,0.08); color: #ef4444; border-color: rgba(239,68,68,0.2); }
 
-        .delete-btn:hover { 
-            background: rgba(239, 68, 68, 0.08);
-            color: #ef4444;
-            border-color: rgba(239, 68, 68, 0.2);
-        }
+        .heart-burst-container { position: fixed; pointer-events: none; z-index: 9999; }
+        .heart-burst-container i { font-size: 50px; color: #ef4444; animation: heartBurst 0.7s ease-out forwards; }
 
-        /* ==================== REPLIES ==================== */
-        .replies-container { 
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: all 0.4s ease;
-        }
+        .share-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .share-modal-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+        .share-modal { background: white; border-radius: 24px; padding: 28px; width: 90%; max-width: 380px; animation: scaleIn 0.3s ease; }
+        .share-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .share-modal-title { font-size: 18px; font-weight: 600; color: #1a1a2e; }
+        .share-modal-close { width: 36px; height: 36px; background: #f3f4f6; border: none; border-radius: 50%; cursor: pointer; font-size: 20px; color: #6b7280; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+        .share-modal-close:hover { background: #fee2e2; color: #ef4444; }
+        .share-options { display: flex; flex-direction: column; gap: 12px; }
+        .share-option { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 14px; cursor: pointer; transition: all 0.25s ease; text-decoration: none; color: inherit; }
+        .share-option:hover { background: #f3f4f6; transform: translateX(5px); }
+        .share-option i { font-size: 24px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+        .share-option.whatsapp i { background: #dcfce7; color: #22c55e; }
+        .share-option.twitter i { background: #dbeafe; color: #3b82f6; }
+        .share-option.facebook i { background: #dbeafe; color: #1877f2; }
+        .share-option.copy i { background: #f3e8ff; color: #a855f7; }
+        .share-option span { font-weight: 500; font-size: 15px; }
+        .share-option.copied i { background: #dcfce7; color: #22c55e; }
+        .share-option.copied span { color: #22c55e; }
 
-        .replies-container.show { 
-            max-height: 2000px;
-            opacity: 1;
-            margin-top: 14px;
-            padding-top: 14px;
-            border-top: 1px solid rgba(243, 244, 246, 0.8);
-        }
-
-        .reply-item { 
-            display: flex; 
-            gap: 10px; 
-            padding: 12px; 
-            background: rgba(249, 250, 251, 0.8);
-            border-radius: 12px; 
-            margin-bottom: 10px;
-            animation: fadeIn 0.3s ease;
-            transition: all 0.25s ease;
-        }
-
-        .reply-item:hover {
-            background: rgba(243, 244, 246, 0.95);
-        }
-
-        .reply-item.removing {
-            animation: slideOut 0.3s ease forwards;
-        }
-
-        .reply-avatar { 
-            width: 32px; 
-            height: 32px; 
-            background: linear-gradient(135deg, #a855f7, #ec4899); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: white; 
-            font-size: 12px; 
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .reply-avatar img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover;
-        }
-
+        .replies-container { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.4s ease; }
+        .replies-container.show { max-height: 2000px; opacity: 1; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(243,244,246,0.8); }
+        .reply-item { display: flex; gap: 10px; padding: 12px; background: rgba(249,250,251,0.8); border-radius: 12px; margin-bottom: 10px; animation: fadeIn 0.3s ease; }
+        .reply-item:hover { background: rgba(243,244,246,0.95); }
+        .reply-item.removing { animation: slideOut 0.3s ease forwards; }
+        .reply-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; overflow: hidden; flex-shrink: 0; }
+        .reply-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .reply-content { flex: 1; }
+        .reply-user-name { font-weight: 600; font-size: 13px; color: #1a1a2e; }
+        .reply-text { font-size: 13px; color: #6b7280; margin-top: 3px; line-height: 1.5; }
+        .reply-time { font-size: 11px; color: #b4b4b4; margin-top: 5px; }
+        .reply-form { display: flex; gap: 10px; margin-top: 12px; }
+        .reply-input { flex: 1; padding: 11px 16px; border: 2px solid #e5e7eb; border-radius: 22px; font-size: 13px; outline: none; font-family: inherit; transition: all 0.25s ease; }
+        .reply-input:focus { border-color: #a855f7; }
+        .btn-reply-submit { padding: 11px 20px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border: none; border-radius: 22px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s ease; }
+        .btn-reply-submit:hover { transform: translateY(-2px); }
+        .btn-reply-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .reply-user-name { 
-            font-weight: 600; 
-            font-size: 13px; 
-            color: #1a1a2e;
-        }
+        .empty-state { text-align: center; padding: 70px 20px; animation: fadeIn 0.5s ease; }
+        .empty-icon { width: 75px; height: 75px; background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(236,72,153,0.1)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
+        .empty-icon i { font-size: 34px; color: #a855f7; }
+        .empty-title { font-size: 19px; font-weight: 600; color: #1a1a2e; margin-bottom: 6px; }
+        .empty-text { color: #9ca3af; font-size: 14px; }
 
-        .reply-text { 
-            font-size: 13px; 
-            color: #6b7280; 
-            margin-top: 3px;
-            line-height: 1.5;
-        }
+        .loading-spinner { width: 18px; height: 18px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin 0.6s linear infinite; }
 
-        .reply-time { 
-            font-size: 11px; 
-            color: #b4b4b4; 
-            margin-top: 5px;
-        }
+        .lightbox { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+        .lightbox.show { display: flex; animation: fadeIn 0.2s ease; }
+        .lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 8px; }
 
-        .reply-form { 
-            display: flex; 
-            gap: 10px; 
-            margin-top: 12px;
-        }
-
-        .reply-input { 
-            flex: 1; 
-            padding: 11px 16px; 
-            border: 2px solid #e5e7eb;
-            border-radius: 22px; 
-            font-size: 13px; 
-            outline: none; 
-            font-family: inherit;
-            transition: all 0.25s ease;
-        }
-
-        .reply-input:focus { 
-            border-color: #a855f7;
-            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
-        }
-
-        .btn-reply-submit { 
-            padding: 11px 20px; 
-            background: linear-gradient(135deg, #a855f7, #ec4899); 
-            color: white; 
-            border: none; 
-            border-radius: 22px; 
-            font-size: 13px; 
-            font-weight: 600; 
-            cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: 0 3px 12px rgba(168, 85, 247, 0.25);
-        }
-
-        .btn-reply-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.35);
-        }
-
-        .btn-reply-submit:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* ==================== EMPTY STATE ==================== */
-        .empty-state { 
-            text-align: center; 
-            padding: 70px 20px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .empty-icon { 
-            width: 75px; 
-            height: 75px; 
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1));
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            margin: 0 auto 18px;
-        }
-
-        .empty-icon i { 
-            font-size: 34px; 
-            color: #a855f7;
-        }
-
-        .empty-title { 
-            font-size: 19px; 
-            font-weight: 600; 
-            color: #1a1a2e; 
-            margin-bottom: 6px;
-        }
-
-        .empty-text { 
-            color: #9ca3af; 
-            font-size: 14px;
-        }
-
-        /* ==================== LOADING SPINNER ==================== */
-        .loading-spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid transparent;
-            border-top-color: currentColor;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ==================== RESPONSIVE ==================== */
         @media (max-width: 600px) {
             .welcome-text { font-size: 26px; }
-            .thought-input-box { border-radius: 28px; padding: 6px 10px 6px 18px; }
-            .thought-card { padding: 18px; border-radius: 16px; }
-            .card-actions { flex-wrap: wrap; gap: 8px; }
+            .thought-input-box { padding: 14px 16px; }
+            .thought-card { padding: 18px; }
+            .card-actions { gap: 6px; }
+            .action-btn { padding: 8px 10px; font-size: 12px; }
             .delete-btn { margin-left: 0; }
             .reply-form { flex-direction: column; }
             .btn-reply-submit { width: 100%; }
-            .action-btn { padding: 8px 12px; font-size: 12px; }
         }
     </style>
 </head>
 <body>
-    <!-- Top Navigation -->
     <nav class="top-nav">
         <div class="top-nav-container">
             <a href="/dashboard" class="logo">
@@ -700,40 +180,40 @@
             </a>
             <div class="nav-actions">
                 <div class="user-avatar" onclick="window.location.href='/settings'">
-                    <% if (profilePic && profilePic.startsWith('http')) { %>
-                        <img src="<%= profilePic %>" alt="">
-                    <% } else if (profilePic) { %>
-                        <img src="/uploads/<%= profilePic %>" alt="">
-                    <% } else { %>
-                        <%= name.charAt(0).toUpperCase() %>
-                    <% } %>
+                    <% if (profilePic && profilePic.startsWith('http')) { %><img src="<%= profilePic %>" alt=""><% } else if (profilePic) { %><img src="/uploads/<%= profilePic %>" alt=""><% } else { %><%= name.charAt(0).toUpperCase() %><% } %>
                 </div>
-                <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
-                    <a href="/admin" class="nav-btn btn-admin" title="Admin"><i class="ri-shield-keyhole-line"></i></a>
-                <% } %>
+                <% if (typeof isAdmin !== 'undefined' && isAdmin) { %><a href="/admin" class="nav-btn btn-admin" title="Admin"><i class="ri-shield-keyhole-line"></i></a><% } %>
                 <a href="/settings" class="nav-btn btn-settings" title="Settings"><i class="ri-settings-3-line"></i></a>
             </div>
         </div>
     </nav>
 
     <div class="container">
-        <!-- Welcome Section -->
         <section class="welcome-section">
             <h1 class="welcome-text">Welcome back, <span><%= name.split(' ')[0] %></span> ✨</h1>
             <p class="welcome-subtext">Share your thoughts with the world</p>
         </section>
 
-        <!-- Thought Input -->
         <section>
             <div class="thought-input-box">
                 <form class="thought-form" id="thoughtForm">
-                    <input type="text" name="thought" id="thoughtInput" class="thought-input" placeholder="What's on your mind?" autocomplete="off" maxlength="280" required>
-                    <button type="submit" class="btn-post" id="postBtn"><i class="ri-send-plane-fill"></i></button>
+                    <textarea name="thought" id="thoughtInput" class="thought-input" placeholder="What's on your mind?" maxlength="500"></textarea>
+                    <div class="image-preview-container" id="imagePreviewContainer">
+                        <img src="" alt="Preview" class="image-preview" id="imagePreview">
+                        <button type="button" class="remove-image-btn" id="removeImageBtn"><i class="ri-close-line"></i></button>
+                    </div>
+                    <div class="input-actions">
+                        <div class="input-left-actions">
+                            <label for="imageInput" class="input-action-btn" id="imageBtn" title="Add Photo"><i class="ri-image-line"></i></label>
+                            <input type="file" id="imageInput" name="image" accept="image/*" style="display:none;">
+                        </div>
+                        <button type="submit" class="btn-post" id="postBtn"><i class="ri-send-plane-fill"></i><span>Post</span></button>
+                    </div>
+                    <p class="file-size-hint"><i class="ri-information-line"></i> Max image size: 4MB</p>
                 </form>
             </div>
         </section>
 
-        <!-- Feed Section -->
         <section class="feed-section">
             <div class="feed-header">
                 <h2 class="feed-title"><i class="ri-global-line"></i> Global Feed</h2>
@@ -746,78 +226,41 @@
                         <article class="thought-card <% if (thought.userEmail === email) { %>own-thought<% } %>" data-thought-id="<%= thought.id %>" data-user-email="<%= thought.userEmail %>">
                             <div class="card-header">
                                 <div class="card-avatar">
-                                    <% if (thought.profilePic && thought.profilePic.startsWith('http')) { %>
-                                        <img src="<%= thought.profilePic %>" alt="">
-                                    <% } else if (thought.profilePic) { %>
-                                        <img src="/uploads/<%= thought.profilePic %>" alt="">
-                                    <% } else { %>
-                                        <%= thought.userName.charAt(0).toUpperCase() %>
-                                    <% } %>
+                                    <% if (thought.profilePic && thought.profilePic.startsWith('http')) { %><img src="<%= thought.profilePic %>" alt=""><% } else if (thought.profilePic) { %><img src="/uploads/<%= thought.profilePic %>" alt=""><% } else { %><%= thought.userName.charAt(0).toUpperCase() %><% } %>
                                 </div>
                                 <div class="card-user-info">
-                                    <div class="card-user-name">
-                                        <%= thought.userName %>
-                                        <% if (thought.userEmail === email) { %><span class="you-badge">You</span><% } %>
-                                    </div>
+                                    <div class="card-user-name"><%= thought.userName %><% if (thought.userEmail === email) { %><span class="you-badge">You</span><% } %></div>
                                     <div class="card-timestamp"><%= formatToIST(thought.timestamp) %></div>
                                 </div>
                             </div>
-                            
-                            <p class="card-message"><%= thought.message %></p>
-                            
+                            <% if (thought.message) { %><p class="card-message"><%= thought.message %></p><% } %>
+                            <% if (thought.image) { %><div class="thought-image-container"><img src="<%= thought.image %>" alt="" class="thought-image" onclick="openLightbox(this.src)"></div><% } %>
                             <div class="card-actions">
                                 <button type="button" class="action-btn like-btn <% if (thought.likedBy && thought.likedBy.includes(email)) { %>liked<% } %>" data-thought-id="<%= thought.id %>" data-liked="<%= thought.likedBy && thought.likedBy.includes(email) ? 'true' : 'false' %>">
                                     <i class="<% if (thought.likedBy && thought.likedBy.includes(email)) { %>ri-heart-fill<% } else { %>ri-heart-line<% } %>"></i>
                                     <span class="like-count"><%= thought.likedBy ? thought.likedBy.length : 0 %></span>
                                 </button>
-
-                                <button type="button" class="action-btn comment-btn" onclick="toggleReplies('<%= thought.id %>')">
-                                    <i class="ri-chat-3-line"></i>
-                                    <span class="reply-count-<%= thought.id %>"><%= thought.replies ? thought.replies.length : 0 %></span>
-                                </button>
-
-                                <% if (thought.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %>
-                                    <button type="button" class="action-btn delete-btn" data-thought-id="<%= thought.id %>" data-user-email="<%= thought.userEmail %>">
-                                        <i class="ri-delete-bin-line"></i>
-                                    </button>
-                                <% } %>
+                                <button type="button" class="action-btn" onclick="toggleReplies('<%= thought.id %>')"><i class="ri-chat-3-line"></i><span class="reply-count-<%= thought.id %>"><%= thought.replies ? thought.replies.length : 0 %></span></button>
+                                <button type="button" class="action-btn share-btn" onclick="openShareModal('<%= thought.id %>', `<%= thought.message ? thought.message.replace(/`/g, '').replace(/'/g, '').substring(0, 80) : 'Check this out!' %>`)"><i class="ri-share-line"></i></button>
+                                <% if (thought.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %><button type="button" class="action-btn delete-btn" data-thought-id="<%= thought.id %>" data-user-email="<%= thought.userEmail %>"><i class="ri-delete-bin-line"></i></button><% } %>
                             </div>
-
-                            <!-- Replies Section -->
                             <div id="replies-<%= thought.id %>" class="replies-container">
                                 <div class="replies-list" id="replies-list-<%= thought.id %>">
-                                    <% if (thought.replies && thought.replies.length > 0) { %>
-                                        <% thought.replies.forEach(function(reply) { %>
-                                            <div class="reply-item" data-reply-id="<%= reply.id %>" data-user-email="<%= reply.userEmail %>">
-                                                <div class="reply-avatar">
-                                                    <% if (reply.profilePic && reply.profilePic.startsWith('http')) { %>
-                                                        <img src="<%= reply.profilePic %>" alt="">
-                                                    <% } else if (reply.profilePic) { %>
-                                                        <img src="/uploads/<%= reply.profilePic %>" alt="">
-                                                    <% } else { %>
-                                                        <%= reply.userName.charAt(0).toUpperCase() %>
-                                                    <% } %>
-                                                </div>
-                                                <div class="reply-content">
-                                                    <div class="reply-user-name"><%= reply.userName %></div>
-                                                    <div class="reply-text"><%= reply.text %></div>
-                                                    <div class="reply-time"><%= formatToIST(reply.timestamp) %></div>
-                                                </div>
-                                                <% if (reply.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %>
-                                                    <button type="button" class="action-btn delete-reply-btn" data-reply-id="<%= reply.id %>" data-user-email="<%= reply.userEmail %>" style="padding:6px 8px;">
-                                                        <i class="ri-delete-bin-line"></i>
-                                                    </button>
-                                                <% } %>
+                                    <% if (thought.replies && thought.replies.length > 0) { thought.replies.forEach(function(reply) { %>
+                                        <div class="reply-item" data-reply-id="<%= reply.id %>" data-user-email="<%= reply.userEmail %>">
+                                            <div class="reply-avatar"><% if (reply.profilePic && reply.profilePic.startsWith('http')) { %><img src="<%= reply.profilePic %>" alt=""><% } else if (reply.profilePic) { %><img src="/uploads/<%= reply.profilePic %>" alt=""><% } else { %><%= reply.userName.charAt(0).toUpperCase() %><% } %></div>
+                                            <div class="reply-content">
+                                                <div class="reply-user-name"><%= reply.userName %></div>
+                                                <div class="reply-text"><%= reply.text %></div>
+                                                <div class="reply-time"><%= formatToIST(reply.timestamp) %></div>
                                             </div>
-                                        <% }); %>
-                                    <% } %>
+                                            <% if (reply.userEmail === email || (typeof isAdmin !== 'undefined' && isAdmin)) { %><button type="button" class="action-btn delete-reply-btn" data-reply-id="<%= reply.id %>" data-user-email="<%= reply.userEmail %>" style="padding:6px 8px;"><i class="ri-delete-bin-line"></i></button><% } %>
+                                        </div>
+                                    <% }); } %>
                                 </div>
-                                
                                 <form class="reply-form" data-thought-id="<%= thought.id %>">
                                     <input type="text" name="replyText" class="reply-input" placeholder="Write a reply..." required maxlength="200">
-                                    <button type="submit" class="btn-reply-submit">
-                                        <i class="ri-reply-line"></i> Reply
-                                    </button>
+                                    <button type="submit" class="btn-reply-submit"><i class="ri-reply-line"></i> Reply</button>
                                 </form>
                             </div>
                         </article>
@@ -833,44 +276,55 @@
         </section>
     </div>
 
+    <!-- Share Modal -->
+    <div class="share-modal-overlay" id="shareModal">
+        <div class="share-modal">
+            <div class="share-modal-header">
+                <h3 class="share-modal-title">Share this thought</h3>
+                <button class="share-modal-close" onclick="closeShareModal()"><i class="ri-close-line"></i></button>
+            </div>
+            <div class="share-options">
+                <a href="#" class="share-option whatsapp" id="shareWhatsapp" target="_blank"><i class="ri-whatsapp-line"></i><span>WhatsApp</span></a>
+                <a href="#" class="share-option twitter" id="shareTwitter" target="_blank"><i class="ri-twitter-x-line"></i><span>Twitter / X</span></a>
+                <a href="#" class="share-option facebook" id="shareFacebook" target="_blank"><i class="ri-facebook-fill"></i><span>Facebook</span></a>
+                <div class="share-option copy" id="shareCopy" onclick="copyShareLink()"><i class="ri-link"></i><span>Copy Link</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <img src="" alt="" id="lightboxImg">
+    </div>
+
     <script>
         const currentUserEmail = '<%= email %>';
         const currentUserName = '<%= name %>';
         const currentUserPic = '<%= profilePic || "" %>';
         const isAdmin = <%= typeof isAdmin !== 'undefined' && isAdmin ? 'true' : 'false' %>;
+        const siteUrl = '<%= siteUrl %>';
+        let currentShareId = null;
+        let currentShareText = '';
+        let selectedFile = null;
 
-        // Format date to IST
         function formatToIST(dateStr) {
             const d = new Date(dateStr);
             const istOffset = 5.5 * 60 * 60 * 1000;
             const istDate = new Date(d.getTime() + istOffset);
-            
             const day = String(istDate.getUTCDate()).padStart(2, '0');
             const month = String(istDate.getUTCMonth() + 1).padStart(2, '0');
             const year = istDate.getUTCFullYear();
-            
             let hours = istDate.getUTCHours();
             const minutes = String(istDate.getUTCMinutes()).padStart(2, '0');
             const seconds = String(istDate.getUTCSeconds()).padStart(2, '0');
-            
             const ampm = hours >= 12 ? 'PM' : 'AM';
             hours = hours % 12 || 12;
-            
             return `${day}/${month}/${year}, ${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
         }
 
-        // Toggle Replies
-        function toggleReplies(id) {
-            document.getElementById('replies-' + id).classList.toggle('show');
-        }
+        function toggleReplies(id) { document.getElementById('replies-' + id).classList.toggle('show'); }
+        function updateThoughtCount() { document.getElementById('thoughtCount').textContent = document.querySelectorAll('.thought-card').length + ' thoughts'; }
 
-        // Update thought count
-        function updateThoughtCount() {
-            const count = document.querySelectorAll('.thought-card').length;
-            document.getElementById('thoughtCount').textContent = count + ' thoughts';
-        }
-
-        // Show heart burst animation
         function showHeartBurst(btn) {
             const rect = btn.getBoundingClientRect();
             const burst = document.createElement('div');
@@ -882,276 +336,217 @@
             setTimeout(() => burst.remove(), 700);
         }
 
-        // ==================== LIKE (AJAX) ====================
+        function openLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('show'); }
+        function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
+
+        function openShareModal(thoughtId, text) {
+            currentShareId = thoughtId;
+            currentShareText = text || 'Check out this thought!';
+            const shareUrl = siteUrl + '/thought/' + thoughtId;
+            const encodedText = encodeURIComponent(currentShareText + ' - ThoughtStream');
+            const encodedUrl = encodeURIComponent(shareUrl);
+            document.getElementById('shareWhatsapp').href = `https://wa.me/?text=${encodedText}%20${encodedUrl}`;
+            document.getElementById('shareTwitter').href = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+            document.getElementById('shareFacebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+            document.getElementById('shareCopy').dataset.url = shareUrl;
+            document.getElementById('shareModal').classList.add('show');
+        }
+
+        function closeShareModal() { document.getElementById('shareModal').classList.remove('show'); }
+
+        function copyShareLink() {
+            const url = document.getElementById('shareCopy').dataset.url;
+            navigator.clipboard.writeText(url).then(() => {
+                const opt = document.getElementById('shareCopy');
+                opt.classList.add('copied');
+                opt.querySelector('span').textContent = 'Copied!';
+                setTimeout(() => { opt.classList.remove('copied'); opt.querySelector('span').textContent = 'Copy Link'; }, 2000);
+            });
+        }
+
+        document.getElementById('shareModal').addEventListener('click', function(e) { if (e.target === this) closeShareModal(); });
+
+        // Image Preview
+        const imageInput = document.getElementById('imageInput');
+        const imageBtn = document.getElementById('imageBtn');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                if (file.size > 4 * 1024 * 1024) {
+                    alert('Image size must be less than 4MB');
+                    this.value = '';
+                    return;
+                }
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.classList.add('show');
+                    imageBtn.classList.add('active');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeImageBtn.addEventListener('click', function() {
+            imageInput.value = '';
+            selectedFile = null;
+            imagePreviewContainer.classList.remove('show');
+            imageBtn.classList.remove('active');
+        });
+
+        // Like
         document.addEventListener('click', async function(e) {
             const likeBtn = e.target.closest('.like-btn');
             if (!likeBtn) return;
-
             likeBtn.disabled = true;
             const thoughtId = likeBtn.dataset.thoughtId;
-            const isLiked = likeBtn.dataset.liked === 'true';
-
             try {
-                const res = await fetch('/api/like-thought', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ thoughtId })
-                });
+                const res = await fetch('/api/like-thought', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ thoughtId }) });
                 const data = await res.json();
-
                 if (data.success) {
                     likeBtn.dataset.liked = data.liked ? 'true' : 'false';
                     likeBtn.querySelector('.like-count').textContent = data.count;
-                    
                     const icon = likeBtn.querySelector('i');
-                    if (data.liked) {
-                        likeBtn.classList.add('liked');
-                        icon.className = 'ri-heart-fill';
-                        showHeartBurst(likeBtn);
-                    } else {
-                        likeBtn.classList.remove('liked');
-                        icon.className = 'ri-heart-line';
-                    }
+                    if (data.liked) { likeBtn.classList.add('liked'); icon.className = 'ri-heart-fill'; showHeartBurst(likeBtn); }
+                    else { likeBtn.classList.remove('liked'); icon.className = 'ri-heart-line'; }
                 }
-            } catch (err) {
-                console.error('Like error:', err);
-            }
-            
+            } catch (err) { console.error(err); }
             likeBtn.disabled = false;
         });
 
-        // ==================== ADD THOUGHT (AJAX) ====================
+        // Post Thought with Image
         document.getElementById('thoughtForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const input = document.getElementById('thoughtInput');
             const btn = document.getElementById('postBtn');
             const thought = input.value.trim();
-            
-            if (!thought) return;
-            
+            if (!thought && !selectedFile) { alert('Please add text or image'); return; }
             btn.disabled = true;
             btn.innerHTML = '<div class="loading-spinner"></div>';
 
-            try {
-                const res = await fetch('/api/add-thought', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ thought })
-                });
-                const data = await res.json();
+            const formData = new FormData();
+            formData.append('thought', thought);
+            if (selectedFile) formData.append('image', selectedFile);
 
+            try {
+                const res = await fetch('/api/add-thought', { method: 'POST', body: formData });
+                const data = await res.json();
                 if (data.success) {
-                    // Remove empty state if exists
                     const emptyState = document.getElementById('emptyState');
                     if (emptyState) emptyState.remove();
-
-                    // Create new thought card
                     const thoughtsFeed = document.getElementById('thoughtsFeed');
                     const card = document.createElement('article');
                     card.className = 'thought-card own-thought';
                     card.dataset.thoughtId = data.thought.id;
                     card.dataset.userEmail = data.thought.userEmail;
-                    
-                    const profileImg = data.thought.profilePic 
-                        ? `<img src="${data.thought.profilePic}" alt="">` 
-                        : data.thought.userName.charAt(0).toUpperCase();
-                    
+                    const profileImg = data.thought.profilePic ? `<img src="${data.thought.profilePic}" alt="">` : data.thought.userName.charAt(0).toUpperCase();
+                    const imageHtml = data.thought.image ? `<div class="thought-image-container"><img src="${data.thought.image}" alt="" class="thought-image" onclick="openLightbox(this.src)"></div>` : '';
+                    const messageHtml = data.thought.message ? `<p class="card-message">${data.thought.message}</p>` : '';
                     card.innerHTML = `
-                        <div class="card-header">
-                            <div class="card-avatar">${profileImg}</div>
-                            <div class="card-user-info">
-                                <div class="card-user-name">${data.thought.userName} <span class="you-badge">You</span></div>
-                                <div class="card-timestamp">${formatToIST(data.thought.timestamp)}</div>
-                            </div>
-                        </div>
-                        <p class="card-message">${data.thought.message}</p>
+                        <div class="card-header"><div class="card-avatar">${profileImg}</div><div class="card-user-info"><div class="card-user-name">${data.thought.userName} <span class="you-badge">You</span></div><div class="card-timestamp">${formatToIST(data.thought.timestamp)}</div></div></div>
+                        ${messageHtml}${imageHtml}
                         <div class="card-actions">
-                            <button type="button" class="action-btn like-btn" data-thought-id="${data.thought.id}" data-liked="false">
-                                <i class="ri-heart-line"></i>
-                                <span class="like-count">0</span>
-                            </button>
-                            <button type="button" class="action-btn comment-btn" onclick="toggleReplies('${data.thought.id}')">
-                                <i class="ri-chat-3-line"></i>
-                                <span class="reply-count-${data.thought.id}">0</span>
-                            </button>
-                            <button type="button" class="action-btn delete-btn" data-thought-id="${data.thought.id}" data-user-email="${data.thought.userEmail}">
-                                <i class="ri-delete-bin-line"></i>
-                            </button>
+                            <button type="button" class="action-btn like-btn" data-thought-id="${data.thought.id}" data-liked="false"><i class="ri-heart-line"></i><span class="like-count">0</span></button>
+                            <button type="button" class="action-btn" onclick="toggleReplies('${data.thought.id}')"><i class="ri-chat-3-line"></i><span class="reply-count-${data.thought.id}">0</span></button>
+                            <button type="button" class="action-btn share-btn" onclick="openShareModal('${data.thought.id}', '${data.thought.message ? data.thought.message.substring(0, 50) : 'Check this out!'}')"><i class="ri-share-line"></i></button>
+                            <button type="button" class="action-btn delete-btn" data-thought-id="${data.thought.id}" data-user-email="${data.thought.userEmail}"><i class="ri-delete-bin-line"></i></button>
                         </div>
-                        <div id="replies-${data.thought.id}" class="replies-container">
-                            <div class="replies-list" id="replies-list-${data.thought.id}"></div>
-                            <form class="reply-form" data-thought-id="${data.thought.id}">
-                                <input type="text" name="replyText" class="reply-input" placeholder="Write a reply..." required maxlength="200">
-                                <button type="submit" class="btn-reply-submit"><i class="ri-reply-line"></i> Reply</button>
-                            </form>
-                        </div>
+                        <div id="replies-${data.thought.id}" class="replies-container"><div class="replies-list" id="replies-list-${data.thought.id}"></div><form class="reply-form" data-thought-id="${data.thought.id}"><input type="text" name="replyText" class="reply-input" placeholder="Write a reply..." required maxlength="200"><button type="submit" class="btn-reply-submit"><i class="ri-reply-line"></i> Reply</button></form></div>
                     `;
-                    
                     thoughtsFeed.insertBefore(card, thoughtsFeed.firstChild);
                     input.value = '';
+                    imageInput.value = '';
+                    selectedFile = null;
+                    imagePreviewContainer.classList.remove('show');
+                    imageBtn.classList.remove('active');
                     updateThoughtCount();
-                }
-            } catch (err) {
-                console.error('Post error:', err);
-            }
-            
+                } else { alert(data.error || 'Failed to post'); }
+            } catch (err) { console.error(err); alert('Failed to post'); }
             btn.disabled = false;
-            btn.innerHTML = '<i class="ri-send-plane-fill"></i>';
+            btn.innerHTML = '<i class="ri-send-plane-fill"></i><span>Post</span>';
         });
 
-        // ==================== DELETE THOUGHT (AJAX) ====================
+        // Delete Thought
         document.addEventListener('click', async function(e) {
             const deleteBtn = e.target.closest('.delete-btn:not(.delete-reply-btn)');
             if (!deleteBtn) return;
-            
             if (!confirm('Delete this thought?')) return;
-
+            deleteBtn.disabled = true;
             const thoughtId = deleteBtn.dataset.thoughtId;
             const thoughtUserEmail = deleteBtn.dataset.userEmail;
             const card = deleteBtn.closest('.thought-card');
-
-            deleteBtn.disabled = true;
-
             try {
-                const res = await fetch('/api/delete-thought', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ thoughtId, thoughtUserEmail })
-                });
+                const res = await fetch('/api/delete-thought', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ thoughtId, thoughtUserEmail }) });
                 const data = await res.json();
-
                 if (data.success) {
                     card.classList.add('removing');
-                    setTimeout(() => {
-                        card.remove();
-                        updateThoughtCount();
-                        
-                        // Show empty state if no thoughts
-                        if (document.querySelectorAll('.thought-card').length === 0) {
-                            document.getElementById('thoughtsFeed').innerHTML = `
-                                <div class="empty-state" id="emptyState">
-                                    <div class="empty-icon"><i class="ri-chat-smile-3-line"></i></div>
-                                    <h3 class="empty-title">No thoughts yet</h3>
-                                    <p class="empty-text">Be the first to share something!</p>
-                                </div>
-                            `;
-                        }
-                    }, 400);
+                    setTimeout(() => { card.remove(); updateThoughtCount(); if (document.querySelectorAll('.thought-card').length === 0) { document.getElementById('thoughtsFeed').innerHTML = '<div class="empty-state" id="emptyState"><div class="empty-icon"><i class="ri-chat-smile-3-line"></i></div><h3 class="empty-title">No thoughts yet</h3><p class="empty-text">Be the first to share something!</p></div>'; } }, 400);
                 }
-            } catch (err) {
-                console.error('Delete error:', err);
-                deleteBtn.disabled = false;
-            }
+            } catch (err) { console.error(err); deleteBtn.disabled = false; }
         });
 
-        // ==================== REPLY (AJAX) ====================
+        // Reply
         document.addEventListener('submit', async function(e) {
             if (!e.target.classList.contains('reply-form')) return;
             e.preventDefault();
-
             const form = e.target;
             const thoughtId = form.dataset.thoughtId;
             const input = form.querySelector('.reply-input');
             const btn = form.querySelector('.btn-reply-submit');
             const replyText = input.value.trim();
-
             if (!replyText) return;
-
             btn.disabled = true;
             btn.innerHTML = '<div class="loading-spinner"></div>';
-
             try {
-                const res = await fetch(`/api/reply/${thoughtId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ replyText })
-                });
+                const res = await fetch(`/api/reply/${thoughtId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ replyText }) });
                 const data = await res.json();
-
                 if (data.success) {
                     const repliesList = document.getElementById('replies-list-' + thoughtId);
                     const replyEl = document.createElement('div');
                     replyEl.className = 'reply-item';
                     replyEl.dataset.replyId = data.reply.id;
                     replyEl.dataset.userEmail = data.reply.userEmail;
-                    
-                    const profileImg = data.reply.profilePic 
-                        ? `<img src="${data.reply.profilePic}" alt="">` 
-                        : data.reply.userName.charAt(0).toUpperCase();
-                    
-                    replyEl.innerHTML = `
-                        <div class="reply-avatar">${profileImg}</div>
-                        <div class="reply-content">
-                            <div class="reply-user-name">${data.reply.userName}</div>
-                            <div class="reply-text">${data.reply.text}</div>
-                            <div class="reply-time">${formatToIST(data.reply.timestamp)}</div>
-                        </div>
-                        <button type="button" class="action-btn delete-reply-btn" data-reply-id="${data.reply.id}" data-user-email="${data.reply.userEmail}" style="padding:6px 8px;">
-                            <i class="ri-delete-bin-line"></i>
-                        </button>
-                    `;
-                    
+                    const profileImg = data.reply.profilePic ? `<img src="${data.reply.profilePic}" alt="">` : data.reply.userName.charAt(0).toUpperCase();
+                    replyEl.innerHTML = `<div class="reply-avatar">${profileImg}</div><div class="reply-content"><div class="reply-user-name">${data.reply.userName}</div><div class="reply-text">${data.reply.text}</div><div class="reply-time">${formatToIST(data.reply.timestamp)}</div></div><button type="button" class="action-btn delete-reply-btn" data-reply-id="${data.reply.id}" data-user-email="${data.reply.userEmail}" style="padding:6px 8px;"><i class="ri-delete-bin-line"></i></button>`;
                     repliesList.appendChild(replyEl);
                     input.value = '';
-                    
-                    // Update reply count
                     const countEl = document.querySelector('.reply-count-' + thoughtId);
                     if (countEl) countEl.textContent = parseInt(countEl.textContent) + 1;
                 }
-            } catch (err) {
-                console.error('Reply error:', err);
-            }
-
+            } catch (err) { console.error(err); }
             btn.disabled = false;
             btn.innerHTML = '<i class="ri-reply-line"></i> Reply';
         });
 
-        // ==================== DELETE REPLY (AJAX) ====================
+        // Delete Reply
         document.addEventListener('click', async function(e) {
             const deleteBtn = e.target.closest('.delete-reply-btn');
             if (!deleteBtn) return;
-            
             if (!confirm('Delete this reply?')) return;
-
+            deleteBtn.disabled = true;
             const replyId = deleteBtn.dataset.replyId;
             const replyUserEmail = deleteBtn.dataset.userEmail;
             const replyItem = deleteBtn.closest('.reply-item');
             const thoughtCard = deleteBtn.closest('.thought-card');
             const thoughtId = thoughtCard.dataset.thoughtId;
-
-            deleteBtn.disabled = true;
-
             try {
-                const res = await fetch('/api/delete-reply', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ replyId, replyUserEmail })
-                });
+                const res = await fetch('/api/delete-reply', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ replyId, replyUserEmail }) });
                 const data = await res.json();
-
                 if (data.success) {
                     replyItem.classList.add('removing');
-                    setTimeout(() => {
-                        replyItem.remove();
-                        // Update reply count
-                        const countEl = document.querySelector('.reply-count-' + thoughtId);
-                        if (countEl) countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1);
-                    }, 300);
+                    setTimeout(() => { replyItem.remove(); const countEl = document.querySelector('.reply-count-' + thoughtId); if (countEl) countEl.textContent = Math.max(0, parseInt(countEl.textContent) - 1); }, 300);
                 }
-            } catch (err) {
-                console.error('Delete reply error:', err);
-                deleteBtn.disabled = false;
-            }
+            } catch (err) { console.error(err); deleteBtn.disabled = false; }
         });
 
-        // Auth check
-        setInterval(function() {
-            fetch('/api/auth-status')
-                .then(r => r.json())
-                .then(d => { if (!d.isLoggedIn) window.location.href = '/login'; })
-                .catch(() => {});
-        }, 5000);
+        setInterval(function() { fetch('/api/auth-status').then(r => r.json()).then(d => { if (!d.isLoggedIn) window.location.href = '/login'; }).catch(() => {}); }, 5000);
+
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeLightbox(); closeShareModal(); } });
     </script>
 </body>
 </html>

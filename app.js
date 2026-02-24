@@ -64,10 +64,18 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const upload = multer({ 
+// Profile pic upload (5MB)
+const uploadProfile = multer({ 
     storage: storage,
     fileFilter: fileFilter,
     limits: { fileSize: 5 * 1024 * 1024 }
+});
+
+// Thought image upload (4MB)
+const uploadThought = multer({ 
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 4 * 1024 * 1024 }
 });
 
 // ==========================================
@@ -276,6 +284,7 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
                 userName: thought.user_name || 'Unknown',
                 userEmail: thought.user_email || '',
                 message: thought.message || '',
+                image: thought.image_url || null,
                 timestamp: thought.created_at,
                 likedBy: thought.liked_by || [],
                 profilePic: thought.profile_pic || null,
@@ -289,7 +298,8 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
             email: userEmail,
             profilePic: profilePic,
             thoughts: thoughts,
-            isAdmin: isAdmin
+            isAdmin: isAdmin,
+            siteUrl: process.env.SITE_URL || 'https://thoughtstream.onrender.com'
         });
     } catch (err) {
         console.error('Dashboard error:', err);
@@ -299,8 +309,48 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
             email: userEmail,
             profilePic: null,
             thoughts: [],
-            isAdmin: isAdmin
+            isAdmin: isAdmin,
+            siteUrl: process.env.SITE_URL || 'https://thoughtstream.onrender.com'
         });
+    }
+});
+
+// ==========================================
+// SINGLE THOUGHT PAGE (For Sharing)
+// ==========================================
+app.get('/thought/:id', async (req, res) => {
+    const thoughtId = parseInt(req.params.id);
+    
+    try {
+        const thoughtQuery = `
+            SELECT t.*, u.profile_pic 
+            FROM thoughts t 
+            LEFT JOIN users u ON t.user_email = u.email 
+            WHERE t.id = $1
+        `;
+        const thoughtResult = await db.query(thoughtQuery, [thoughtId]);
+        
+        if (thoughtResult.rows.length === 0) {
+            return res.redirect('/login');
+        }
+        
+        const thought = thoughtResult.rows[0];
+        
+        res.render('single-thought', {
+            thought: {
+                id: thought.id,
+                userName: thought.user_name,
+                message: thought.message,
+                image: thought.image_url,
+                timestamp: thought.created_at,
+                likeCount: thought.liked_by ? thought.liked_by.length : 0,
+                profilePic: thought.profile_pic
+            },
+            siteUrl: process.env.SITE_URL || 'https://thoughtstream.onrender.com'
+        });
+    } catch (err) {
+        console.error('Single thought error:', err);
+        res.redirect('/login');
     }
 });
 
@@ -351,7 +401,7 @@ app.get('/settings', isAuthenticated, async (req, res) => {
 // ==========================================
 // SETTINGS UPDATE (Profile)
 // ==========================================
-app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async (req, res) => {
+app.post('/settings/update', isAuthenticated, uploadProfile.single('profilePic'), async (req, res) => {
     const userId = req.session.userId;
     const userEmail = req.session.userEmail;
     const currentName = req.body.currentName || '';
@@ -368,7 +418,7 @@ app.post('/settings/update', isAuthenticated, upload.single('profilePic'), async
         let profilePic = null;
         
         if (req.file) {
-            const fileName = `${userId}-${Date.now()}-${req.file.originalname}`;
+            const fileName = `profile-${userId}-${Date.now()}-${req.file.originalname}`;
             
             const { data, error } = await supabase.storage
                 .from('profile-pics')
@@ -430,7 +480,6 @@ app.post('/settings/change-password', isAuthenticated, async (req, res) => {
     const confirmNewPassword = req.body.confirmNewPassword ? req.body.confirmNewPassword.trim() : '';
 
     try {
-        // Get current user data
         const userQuery = 'SELECT * FROM users WHERE id = $1';
         const userResult = await db.query(userQuery, [userId]);
         
@@ -441,7 +490,6 @@ app.post('/settings/change-password', isAuthenticated, async (req, res) => {
         
         const user = userResult.rows[0];
 
-        // Validate current password
         let validPassword = false;
         if (user.password.startsWith('$2b$')) {
             validPassword = await bcrypt.compare(currentPassword, user.password);
@@ -462,7 +510,6 @@ app.post('/settings/change-password', isAuthenticated, async (req, res) => {
             });
         }
 
-        // Validate new password
         if (newPassword.length < 6) {
             return res.render('settings', {
                 userId: userId,
@@ -489,7 +536,6 @@ app.post('/settings/change-password', isAuthenticated, async (req, res) => {
             });
         }
 
-        // Hash and update new password
         const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
         await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
 
@@ -523,127 +569,6 @@ app.post('/settings/change-password', isAuthenticated, async (req, res) => {
 });
 
 // ==========================================
-// ADD THOUGHT
-// ==========================================
-app.post('/add-thought', isAuthenticated, async (req, res) => {
-    const thought = req.body.thought ? req.body.thought.trim() : '';
-    const userId = req.session.userId;
-    const userName = req.session.userName;
-    const userEmail = req.session.userEmail;
-
-    if (thought !== '') {
-        try {
-            const query = `
-                INSERT INTO thoughts (user_id, user_name, user_email, message, liked_by) 
-                VALUES ($1, $2, $3, $4, $5)
-            `;
-            await db.query(query, [userId, userName, userEmail, thought, []]);
-        } catch (err) {
-            console.error('Add thought error:', err);
-        }
-    }
-
-    res.redirect('/dashboard');
-});
-
-// ==========================================
-// LIKE THOUGHT
-// ==========================================
-app.post('/like-thought', isAuthenticated, async (req, res) => {
-    const thoughtId = parseInt(req.body.thoughtId);
-    const userEmail = req.session.userEmail;
-
-    try {
-        const result = await db.query('SELECT liked_by FROM thoughts WHERE id = $1', [thoughtId]);
-        
-        if (result.rows.length > 0) {
-            let likedBy = result.rows[0].liked_by || [];
-            
-            const likeIndex = likedBy.indexOf(userEmail);
-            
-            if (likeIndex > -1) {
-                likedBy.splice(likeIndex, 1);
-            } else {
-                likedBy.push(userEmail);
-            }
-            
-            await db.query('UPDATE thoughts SET liked_by = $1 WHERE id = $2', [likedBy, thoughtId]);
-        }
-    } catch (err) {
-        console.error('Like error:', err);
-    }
-
-    res.redirect('/dashboard');
-});
-
-// ==========================================
-// REPLY TO THOUGHT
-// ==========================================
-app.post('/reply/:thoughtId', isAuthenticated, async (req, res) => {
-    const thoughtId = parseInt(req.params.thoughtId);
-    const replyText = req.body.replyText ? req.body.replyText.trim() : '';
-    const userName = req.session.userName;
-    const userEmail = req.session.userEmail;
-
-    if (replyText !== '') {
-        try {
-            const query = `
-                INSERT INTO replies (thought_id, user_name, user_email, reply_text) 
-                VALUES ($1, $2, $3, $4)
-            `;
-            await db.query(query, [thoughtId, userName, userEmail, replyText]);
-        } catch (err) {
-            console.error('Reply error:', err);
-        }
-    }
-
-    res.redirect('/dashboard');
-});
-
-// ==========================================
-// DELETE THOUGHT
-// ==========================================
-app.post('/delete-thought', isAuthenticated, async (req, res) => {
-    const thoughtId = parseInt(req.body.thoughtId);
-    const thoughtUserEmail = req.body.thoughtUserEmail;
-    const userEmail = req.session.userEmail;
-    const isAdmin = req.session.isAdmin;
-
-    if (thoughtUserEmail === userEmail || isAdmin) {
-        try {
-            await db.query('DELETE FROM replies WHERE thought_id = $1', [thoughtId]);
-            await db.query('DELETE FROM thoughts WHERE id = $1', [thoughtId]);
-        } catch (err) {
-            console.error('Delete error:', err);
-        }
-    }
-
-    const referer = req.get('Referer') || '/dashboard';
-    res.redirect(referer);
-});
-
-// ==========================================
-// DELETE REPLY
-// ==========================================
-app.post('/delete-reply', isAuthenticated, async (req, res) => {
-    const replyId = parseInt(req.body.replyId);
-    const replyUserEmail = req.body.replyUserEmail;
-    const userEmail = req.session.userEmail;
-    const isAdmin = req.session.isAdmin;
-
-    if (replyUserEmail === userEmail || isAdmin) {
-        try {
-            await db.query('DELETE FROM replies WHERE id = $1', [replyId]);
-        } catch (err) {
-            console.error('Delete reply error:', err);
-        }
-    }
-
-    const referer = req.get('Referer') || '/dashboard';
-    res.redirect(referer);
-});
-
-// ==========================================
 // ADMIN PANEL
 // ==========================================
 app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
@@ -674,6 +599,7 @@ app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
             userName: t.user_name,
             userEmail: t.user_email,
             message: t.message,
+            image: t.image_url,
             timestamp: t.created_at,
             profilePic: t.profile_pic
         }));
@@ -736,18 +662,7 @@ app.post('/admin/delete-user', isAuthenticated, isAdmin, async (req, res) => {
 });
 
 // ==========================================
-// CHECK AUTH STATUS
-// ==========================================
-app.get('/api/auth-status', (req, res) => {
-    res.json({
-        isLoggedIn: !!(req.session && req.session.userId),
-        userId: req.session?.userId || null
-    });
-});
-
-
-// ==========================================
-// AJAX API ROUTES (No Page Reload)
+// AJAX API ROUTES
 // ==========================================
 
 // AJAX Like
@@ -774,11 +689,7 @@ app.post('/api/like-thought', isAuthenticated, async (req, res) => {
             
             await db.query('UPDATE thoughts SET liked_by = $1 WHERE id = $2', [likedBy, thoughtId]);
             
-            return res.json({ 
-                success: true, 
-                liked: liked, 
-                count: likedBy.length 
-            });
+            return res.json({ success: true, liked: liked, count: likedBy.length });
         }
         
         res.json({ success: false });
@@ -806,7 +717,6 @@ app.post('/api/reply/:thoughtId', isAuthenticated, async (req, res) => {
         `;
         const result = await db.query(query, [thoughtId, userName, userEmail, replyText]);
         
-        // Get user profile pic
         const userResult = await db.query('SELECT profile_pic FROM users WHERE email = $1', [userEmail]);
         const profilePic = userResult.rows[0]?.profile_pic || null;
 
@@ -868,25 +778,49 @@ app.post('/api/delete-reply', isAuthenticated, async (req, res) => {
     }
 });
 
-// AJAX Add Thought
-app.post('/api/add-thought', isAuthenticated, async (req, res) => {
+// AJAX Add Thought with Image
+app.post('/api/add-thought', isAuthenticated, uploadThought.single('image'), async (req, res) => {
     const thought = req.body.thought ? req.body.thought.trim() : '';
     const userId = req.session.userId;
     const userName = req.session.userName;
     const userEmail = req.session.userEmail;
 
-    if (thought === '') {
-        return res.json({ success: false, error: 'Empty thought' });
+    if (thought === '' && !req.file) {
+        return res.json({ success: false, error: 'Please add text or image' });
     }
 
     try {
+        let imageUrl = null;
+
+        // Upload image to Supabase if provided
+        if (req.file) {
+            const fileName = `thought-${userId}-${Date.now()}-${req.file.originalname}`;
+            
+            const { data, error } = await supabase.storage
+                .from('thought-images')
+                .upload(fileName, req.file.buffer, {
+                    contentType: req.file.mimetype,
+                    upsert: true
+                });
+
+            if (error) {
+                console.error('Supabase upload error:', error);
+                return res.json({ success: false, error: 'Failed to upload image' });
+            }
+
+            const { data: urlData } = supabase.storage
+                .from('thought-images')
+                .getPublicUrl(fileName);
+            
+            imageUrl = urlData.publicUrl;
+        }
+
         const query = `
-            INSERT INTO thoughts (user_id, user_name, user_email, message, liked_by) 
-            VALUES ($1, $2, $3, $4, $5) RETURNING *
+            INSERT INTO thoughts (user_id, user_name, user_email, message, image_url, liked_by) 
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
         `;
-        const result = await db.query(query, [userId, userName, userEmail, thought, []]);
+        const result = await db.query(query, [userId, userName, userEmail, thought, imageUrl, []]);
         
-        // Get user profile pic
         const userResult = await db.query('SELECT profile_pic FROM users WHERE email = $1', [userEmail]);
         const profilePic = userResult.rows[0]?.profile_pic || null;
 
@@ -897,6 +831,7 @@ app.post('/api/add-thought', isAuthenticated, async (req, res) => {
                 userName: userName,
                 userEmail: userEmail,
                 message: thought,
+                image: imageUrl,
                 timestamp: result.rows[0].created_at,
                 likedBy: [],
                 profilePic: profilePic,
@@ -907,6 +842,16 @@ app.post('/api/add-thought', isAuthenticated, async (req, res) => {
         console.error('Add thought error:', err);
         res.json({ success: false, error: err.message });
     }
+});
+
+// ==========================================
+// CHECK AUTH STATUS
+// ==========================================
+app.get('/api/auth-status', (req, res) => {
+    res.json({
+        isLoggedIn: !!(req.session && req.session.userId),
+        userId: req.session?.userId || null
+    });
 });
 
 // ==========================================
