@@ -26,6 +26,9 @@
         .form-group input { width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; background: #f9fafb; color: #1a1a2e; font-family: inherit; transition: all 0.3s; }
         .form-group input::placeholder { color: #9ca3af; }
         .form-group input:focus { outline: none; border-color: #a855f7; background: white; box-shadow: 0 0 0 4px rgba(168,85,247,0.1); }
+        .forgot-link { text-align: right; margin-bottom: 20px; }
+        .forgot-link a { color: #a855f7; font-size: 14px; text-decoration: none; font-weight: 500; }
+        .forgot-link a:hover { text-decoration: underline; }
         .btn-login { width: 100%; padding: 16px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(168,85,247,0.3); }
         .divider { display: flex; align-items: center; margin: 25px 0; }
@@ -78,32 +81,14 @@
                     <input type="password" name="password" placeholder="Enter your password" required>
                 </div>
                 
+                <div class="forgot-link">
+                    <a href="/forgot-password">Forgot Password?</a>
+                </div>
+                
                 <button type="submit" class="btn-login">
                     <i class="ri-login-box-line"></i> Sign In
                 </button>
             </form>
-            <form method="POST" action="/login">
-    <div class="form-group">
-        <label><i class="ri-mail-line"></i> Email</label>
-        <input type="email" name="email" placeholder="Enter your email" required>
-    </div>
-    
-    <div class="form-group">
-        <label><i class="ri-lock-line"></i> Password</label>
-        <input type="password" name="password" placeholder="Enter your password" required>
-    </div>
-    
-    <!-- ADD THIS FORGOT PASSWORD LINK -->
-    <div style="text-align: right; margin-bottom: 20px;">
-        <a href="/forgot-password" style="color: #a855f7; font-size: 14px; text-decoration: none; font-weight: 500;">
-            Forgot Password?
-        </a>
-    </div>
-    
-    <button type="submit" class="btn-login">
-        <i class="ri-login-box-line"></i> Sign In
-    </button>
-</form>
 
             <div class="divider">
                 <div class="divider-line"></div>
