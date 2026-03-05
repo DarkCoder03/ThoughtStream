@@ -871,7 +871,6 @@ app.post('/forgot-password', async (req, res) => {
         // Check if user exists in our database
         const userCheck = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
         
-        // If user doesn't exist, show error
         if (userCheck.rows.length === 0) {
             return res.render('forgot-password', { 
                 error: 'This email is not registered. Please create an account first.', 
@@ -883,7 +882,7 @@ app.post('/forgot-password', async (req, res) => {
         const bannedCheck = await db.query('SELECT * FROM banned_users WHERE LOWER(email) = $1', [email]);
         if (bannedCheck.rows.length > 0) {
             return res.render('forgot-password', { 
-                error: 'This account has been banned and cannot reset password.', 
+                error: 'This account has been banned.', 
                 success: null 
             });
         }
@@ -892,13 +891,13 @@ app.post('/forgot-password', async (req, res) => {
 
         // Send password reset email via Supabase
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${siteUrl}/reset-password`
+            redirectTo: `${siteUrl}/update-password`
         });
 
         if (error) {
             console.error('Password reset error:', error);
             return res.render('forgot-password', { 
-                error: 'Failed to send reset email. Please try again later.', 
+                error: 'Failed to send reset email. Please try again.', 
                 success: null 
             });
         }
@@ -907,13 +906,114 @@ app.post('/forgot-password', async (req, res) => {
 
         return res.render('forgot-password', { 
             error: null, 
-            success: 'Password reset link sent! Please check your email inbox and spam folder. The link will expire in 1 hour.' 
+            success: 'Password reset link sent! Check your email inbox and spam folder.' 
         });
 
     } catch (err) {
         console.error('Forgot password error:', err);
         return res.render('forgot-password', { error: 'Something went wrong. Please try again.', success: null });
     }
+});
+
+// ==========================================
+// UPDATE PASSWORD PAGE (Supabase redirects here)
+// ==========================================
+app.get('/update-password', async (req, res) => {
+    // Render page - JavaScript will handle the token from URL
+    res.render('update-password', { 
+        error: null, 
+        success: null
+    });
+});
+
+app.post('/update-password', async (req, res) => {
+    const { password, confirmPassword, access_token, refresh_token } = req.body;
+
+    // Validation
+    if (!password || !confirmPassword) {
+        return res.render('update-password', { 
+            error: 'Please fill in all fields.', 
+            success: null
+        });
+    }
+
+    if (password.length < 6) {
+        return res.render('update-password', { 
+            error: 'Password must be at least 6 characters.', 
+            success: null
+        });
+    }
+
+    if (password !== confirmPassword) {
+        return res.render('update-password', { 
+            error: 'Passwords do not match.', 
+            success: null
+        });
+    }
+
+    if (!access_token) {
+        return res.render('update-password', { 
+            error: 'Invalid reset link. Please request a new one.', 
+            success: null
+        });
+    }
+
+    try {
+        // Set the session using the tokens from the URL
+        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+            access_token: access_token,
+            refresh_token: refresh_token || access_token
+        });
+
+        if (sessionError) {
+            console.error('Session error:', sessionError);
+            return res.render('update-password', { 
+                error: 'Reset link has expired. Please request a new one.', 
+                success: null
+            });
+        }
+
+        // Now update the password
+        const { data, error } = await supabase.auth.updateUser({
+            password: password
+        });
+
+        if (error) {
+            console.error('Update password error:', error);
+            return res.render('update-password', { 
+                error: 'Failed to update password: ' + error.message, 
+                success: null
+            });
+        }
+
+        // Update password in our database too
+        if (sessionData?.user?.email) {
+            const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+            await db.query('UPDATE users SET password = $1 WHERE LOWER(email) = $2', 
+                [hashedPassword, sessionData.user.email.toLowerCase()]);
+            console.log('✅ Password updated for:', sessionData.user.email);
+        }
+
+        // Sign out
+        await supabase.auth.signOut();
+
+        return res.render('update-password', { 
+            error: null, 
+            success: 'Password updated successfully! You can now login.'
+        });
+
+    } catch (err) {
+        console.error('Update password error:', err);
+        return res.render('update-password', { 
+            error: 'Something went wrong. Please try again.', 
+            success: null
+        });
+    }
+});
+
+// Keep old route for backward compatibility
+app.get('/reset-password', (req, res) => {
+    res.redirect('/update-password' + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''));
 });
 
 // ==========================================
