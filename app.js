@@ -786,6 +786,180 @@ app.post('/api/add-thought', isAuthenticated, uploadThought.single('image'), asy
     } catch (err) { res.json({ success: false }); }
 });
 
+
+
+// ==========================================
+// FORGOT PASSWORD
+// ==========================================
+app.get('/forgot-password', (req, res) => {
+    if (req.session && req.session.userId) return res.redirect('/dashboard');
+    res.render('forgot-password', { error: null, success: null });
+});
+
+app.post('/forgot-password', async (req, res) => {
+    const email = req.body.email ? req.body.email.trim().toLowerCase() : '';
+
+    if (!email) {
+        return res.render('forgot-password', { error: 'Please enter your email address.', success: null });
+    }
+
+    try {
+        // Check if user exists in our database
+        const userCheck = await db.query('SELECT * FROM users WHERE LOWER(email) = $1', [email]);
+        
+        if (userCheck.rows.length === 0) {
+            // Don't reveal if email exists or not (security)
+            return res.render('forgot-password', { 
+                error: null, 
+                success: 'If this email is registered, you will receive a password reset link shortly. Please check your inbox and spam folder.' 
+            });
+        }
+
+        // Check if user is banned
+        const bannedCheck = await db.query('SELECT * FROM banned_users WHERE LOWER(email) = $1', [email]);
+        if (bannedCheck.rows.length > 0) {
+            return res.render('forgot-password', { 
+                error: 'This account has been banned and cannot reset password.', 
+                success: null 
+            });
+        }
+
+        const siteUrl = process.env.SITE_URL || 'https://thoughtstream-xgn8.onrender.com';
+
+        // Send password reset email via Supabase
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: `${siteUrl}/reset-password`
+        });
+
+        if (error) {
+            console.error('Password reset error:', error);
+            return res.render('forgot-password', { 
+                error: 'Failed to send reset email. Please try again later.', 
+                success: null 
+            });
+        }
+
+        console.log('📧 Password reset email sent to:', email);
+
+        return res.render('forgot-password', { 
+            error: null, 
+            success: 'Password reset link sent! Please check your email inbox and spam folder. The link will expire in 1 hour.' 
+        });
+
+    } catch (err) {
+        console.error('Forgot password error:', err);
+        return res.render('forgot-password', { error: 'Something went wrong. Please try again.', success: null });
+    }
+});
+
+// ==========================================
+// RESET PASSWORD PAGE
+// ==========================================
+app.get('/reset-password', async (req, res) => {
+    // Supabase redirects with access_token in URL hash or query
+    const access_token = req.query.access_token;
+    const error = req.query.error;
+    const error_description = req.query.error_description;
+
+    if (error) {
+        console.error('Reset password error:', error, error_description);
+        return res.render('reset-password', { 
+            error: error_description || 'The reset link is invalid or has expired. Please request a new one.',
+            success: null,
+            access_token: null
+        });
+    }
+
+    // If no token in query, render page that will extract from hash
+    res.render('reset-password', { 
+        error: null, 
+        success: null,
+        access_token: access_token || ''
+    });
+});
+
+app.post('/reset-password', async (req, res) => {
+    const { password, confirmPassword, access_token } = req.body;
+
+    // Validation
+    if (!password || !confirmPassword) {
+        return res.render('reset-password', { 
+            error: 'Please fill in all fields.', 
+            success: null,
+            access_token: access_token
+        });
+    }
+
+    if (password.length < 6) {
+        return res.render('reset-password', { 
+            error: 'Password must be at least 6 characters.', 
+            success: null,
+            access_token: access_token
+        });
+    }
+
+    if (password !== confirmPassword) {
+        return res.render('reset-password', { 
+            error: 'Passwords do not match.', 
+            success: null,
+            access_token: access_token
+        });
+    }
+
+    try {
+        // If we have access_token, use it to update password
+        if (access_token) {
+            // Set the session with the access token
+            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+                access_token: access_token,
+                refresh_token: access_token // Use same token
+            });
+
+            if (sessionError) {
+                console.error('Session error:', sessionError);
+            }
+        }
+
+        // Update password in Supabase Auth
+        const { data, error } = await supabase.auth.updateUser({
+            password: password
+        });
+
+        if (error) {
+            console.error('Update password error:', error);
+            return res.render('reset-password', { 
+                error: error.message || 'Failed to reset password. The link may have expired.', 
+                success: null,
+                access_token: null
+            });
+        }
+
+        // Also update password in our database
+        if (data?.user?.email) {
+            const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+            await db.query('UPDATE users SET password = $1 WHERE LOWER(email) = $2', [hashedPassword, data.user.email.toLowerCase()]);
+            console.log('✅ Password reset for:', data.user.email);
+        }
+
+        // Sign out after password reset
+        await supabase.auth.signOut();
+
+        return res.render('reset-password', { 
+            error: null, 
+            success: 'Your password has been reset successfully! You can now login with your new password.',
+            access_token: null
+        });
+
+    } catch (err) {
+        console.error('Reset password error:', err);
+        return res.render('reset-password', { 
+            error: 'Something went wrong. Please try again or request a new reset link.', 
+            success: null,
+            access_token: null
+        });
+    }
+});
+
 app.get('/api/auth-status', (req, res) => {
     res.json({ isLoggedIn: !!(req.session && req.session.userId), userId: req.session?.userId || null });
 });
